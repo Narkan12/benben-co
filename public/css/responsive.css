@@ -1,0 +1,54 @@
+/* =========================================================================
+   RESPONSIVE — supplementary breakpoints
+   (component-level responsive rules already live in app.css;
+   this file covers page-density & spacing adjustments)
+   ========================================================================= */
+
+@media (max-width: 1199px){
+  .bb-footer-grid{ grid-template-columns: 1.2fr 1fr 1fr; }
+}
+
+@media (max-width: 991px){
+  .bb-section{ padding: 60px 0; }
+  .bb-section-sm{ padding: 40px 0; }
+  .container-bb{ padding: 0 18px; }
+}
+
+@media (max-width: 767px){
+  .bb-promo{ border-radius: var(--r-md); }
+  .bb-summary-card{ padding: 20px; }
+  .bb-dash-main{ padding: 20px 14px; }
+  .bb-stat-card{ flex-direction: column; align-items: flex-start; }
+}
+
+@media (max-width: 575px){
+  .bb-footer-grid{ grid-template-columns: 1fr; }
+  .bb-hero-actions .btn-bb{ width: 100%; }
+  .bb-hero-actions{ flex-direction: column; }
+  .bb-countdown-box{ min-width: 56px; padding: 10px 6px; }
+  .bb-countdown-box .num{ font-size: 1.3rem; }
+  .section-title{ font-size: 1.6rem; }
+}
+
+/* products grid responsiveness (4 / 2 / 1 as required by brief) */
+.bb-products-grid{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 24px;
+}
+@media (max-width: 575px){
+  .bb-products-grid{ grid-template-columns: 1fr; }
+}
+
+.bb-related-grid{
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 22px;
+}
+@media (max-width: 991px){ .bb-related-grid{ grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 575px){ .bb-related-grid{ grid-template-columns: 1fr; } }
+
+/* print (for admin report export UI affordance) */
+@media print{
+  .bb-dash-sidebar, .bb-navbar, .bb-footer{ display: none !important; }
+}
