@@ -1,0 +1,942 @@
+:root {
+  --bb-theme-bg: #F7F2EA;
+  --bb-theme-sidebar: #F7F2EA;
+  --bb-theme-surface: #FFFFFF;
+  --bb-theme-surface-secondary: #FBF9F6;
+  --bb-theme-text: #35251F;
+  --bb-theme-muted: #82766D;
+  --bb-theme-border: rgba(53, 37, 31, .12);
+  --bb-theme-accent: #76513B;
+  --bb-theme-hover: #E8DCCB;
+  --bb-theme-chart-grid: rgba(53, 37, 31, .1);
+  --bb-scroll-track: #F1EAE1;
+  --bb-scroll-thumb: #B98A60;
+  --bb-scroll-thumb-hover: #96745A;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --bb-theme-bg: #171717;
+  --bb-theme-sidebar: #1E1E1E;
+  --bb-theme-surface: #242424;
+  --bb-theme-surface-secondary: #2B2B2B;
+  --bb-theme-text: #F2F2F2;
+  --bb-theme-muted: #A3A3A3;
+  --bb-theme-border: #353535;
+  --bb-theme-accent: #9A795F;
+  --bb-theme-hover: #34302D;
+  --bb-theme-chart-grid: rgba(242, 242, 242, .12);
+  --bb-scroll-track: #242424;
+  --bb-scroll-thumb: #76513B;
+  --bb-scroll-thumb-hover: #B98A60;
+  --bb-dark-choc: #F2F2F2;
+  --bb-choc: #C4A88F;
+  --bb-cream: #2B2B2B;
+  --bb-light-cream: #171717;
+  --bb-white: #242424;
+  --bb-text: #F2F2F2;
+  --bb-choc-soft: #9A795F;
+  --bb-beige: #34302D;
+  --bb-beige-soft: #34302D;
+  --bb-line: #353535;
+  --bb-shadow: 0 18px 40px -18px rgba(0, 0, 0, .6);
+  --bb-shadow-sm: 0 8px 20px -12px rgba(0, 0, 0, .55);
+  --bs-body-bg: #171717;
+  --bs-body-color: #F2F2F2;
+  --bs-emphasis-color: #F2F2F2;
+  --bs-secondary-color: #A3A3A3;
+  --bs-tertiary-color: #A3A3A3;
+  --bs-border-color: #353535;
+  --bs-secondary-bg: #242424;
+  --bs-tertiary-bg: #2B2B2B;
+  --bs-link-color: #C4A88F;
+  --bs-link-hover-color: #E0C7AE;
+  --bs-card-bg: #242424;
+  --bs-modal-bg: #242424;
+  --bs-dropdown-bg: #242424;
+  --bs-toast-bg: #242424;
+  --bs-table-bg: #242424;
+  --bs-table-color: #F2F2F2;
+  --bs-table-border-color: #353535;
+}
+
+html,
+body {
+  background-color: var(--bb-theme-bg);
+  color: var(--bb-theme-text);
+}
+
+html,
+* {
+  scrollbar-color: var(--bb-scroll-thumb) var(--bb-scroll-track);
+  scrollbar-width: thin;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  border-radius: 999px;
+  background: var(--bb-scroll-track);
+}
+
+*::-webkit-scrollbar-thumb {
+  border: 2px solid var(--bb-scroll-track);
+  border-radius: 999px;
+  background: var(--bb-scroll-thumb);
+  transition: background-color .18s ease;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--bb-scroll-thumb-hover);
+}
+
+.bb-admin-sidebar-scroll {
+  scrollbar-color: var(--bb-scroll-thumb) var(--bb-scroll-track);
+}
+
+.bb-admin-sidebar-scroll::-webkit-scrollbar-track {
+  background: var(--bb-scroll-track);
+}
+
+.bb-staff-login {
+  margin: 0;
+  height: auto;
+  min-height: 100vh;
+  min-height: 100svh;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.bb-staff-login .bb-staff-login-layout {
+  height: auto;
+  min-height: 100vh;
+  min-height: 100svh;
+  min-width: 0;
+  overflow: visible;
+}
+
+.bb-staff-login .bb-staff-login-story {
+  height: auto;
+  min-height: 100vh;
+  min-height: 100svh;
+  overflow: visible;
+}
+
+.bb-staff-login .bb-staff-login-main {
+  height: auto;
+  min-height: 100vh;
+  min-height: 100svh;
+  min-width: 0;
+  overflow: visible;
+}
+
+.bb-staff-login.bb-customer-register-page .bb-staff-login-main {
+  overflow-y: visible;
+}
+
+html[data-theme="dark"] body {
+  background-color: var(--bb-theme-bg);
+  color: var(--bb-theme-text);
+}
+
+body,
+.bb-navbar,
+.bb-admin-topbar,
+.bb-dash-main,
+.bb-panel,
+.bb-chart-card,
+.bb-stat-card,
+.bb-product-card,
+.bb-filter-card,
+.bb-cart-row,
+.bb-summary-card,
+.bb-staff-login-main,
+.bb-staff-login-card,
+.bb-theme-toggle {
+  transition: background-color .22s ease, color .22s ease, border-color .22s ease;
+}
+
+.bb-theme-toggle {
+  display: inline-grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--bb-theme-border);
+  border-radius: 50%;
+  color: var(--bb-theme-text);
+  background: var(--bb-theme-surface);
+  cursor: pointer;
+  transition: background-color .2s ease, color .2s ease, border-color .2s ease, transform .2s ease;
+}
+
+.bb-theme-toggle:hover {
+  border-color: var(--bb-theme-accent);
+  color: var(--bb-theme-text);
+  background: var(--bb-theme-hover);
+  transform: translateY(-1px);
+}
+
+.bb-theme-toggle:focus-visible {
+  outline: 2px solid var(--bb-theme-accent);
+  outline-offset: 3px;
+}
+
+.bb-theme-toggle i {
+  font-size: .92rem;
+}
+
+html[data-theme="dark"] .bb-navbar.is-scrolled {
+  border-color: var(--bb-theme-border);
+  background: rgba(23, 23, 23, .95);
+}
+
+html[data-theme="dark"] .bb-nav-account-link {
+  border-color: var(--bb-theme-border);
+  color: var(--bb-theme-text);
+  background: var(--bb-theme-surface);
+}
+
+html[data-theme="dark"] .bb-nav-account-link:hover {
+  border-color: var(--bb-theme-accent);
+  color: var(--bb-theme-text);
+  background: var(--bb-theme-hover);
+}
+
+html[data-theme="dark"] .bb-hero,
+html[data-theme="dark"] .bb-promise-bar,
+html[data-theme="dark"] .bb-footer,
+html[data-theme="dark"] .bg-dark-choc {
+  color: var(--bb-theme-text);
+  background: #1E1E1E !important;
+}
+
+html[data-theme="dark"] .bb-footer h5 {
+  color: var(--bb-theme-text);
+}
+
+html[data-theme="dark"] .bb-hero .btn-bb-primary,
+html[data-theme="dark"] .bb-hero .btn-bb-outline:hover {
+  border-color: var(--bb-theme-hover);
+  color: var(--bb-theme-text);
+  background: var(--bb-theme-surface-secondary);
+}
+
+html[data-theme="dark"] .bb-hero .btn-bb-outline {
+  border-color: rgba(242, 242, 242, .55);
+  color: var(--bb-theme-text);
+}
+
+html[data-theme="dark"] .bb-logo .mark,
+html[data-theme="dark"] .btn-bb-primary,
+html[data-theme="dark"] .bb-dashboard-primary-action,
+html[data-theme="dark"] .bb-pagination .active span,
+html[data-theme="dark"] .bb-pagination .active a {
+  border-color: var(--bb-theme-accent);
+  color: #FFFFFF;
+  background: var(--bb-theme-accent);
+}
+
+html[data-theme="dark"] .btn-bb-primary:hover,
+html[data-theme="dark"] .bb-dashboard-primary-action:hover {
+  border-color: #B08D70;
+  color: #FFFFFF;
+  background: #B08D70;
+}
+
+html[data-theme="dark"] .btn-bb-outline {
+  border-color: var(--bb-theme-accent);
+  color: var(--bb-theme-text);
+}
+
+html[data-theme="dark"] .btn-bb-outline:hover,
+html[data-theme="dark"] .bb-pagination a:hover {
+  color: var(--bb-theme-text);
+  background: var(--bb-theme-hover);
+}
+
+html[data-theme="dark"] .bb-panel,
+html[data-theme="dark"] .bb-chart-card,
+html[data-theme="dark"] .bb-stat-card,
+html[data-theme="dark"] .bb-product-card,
+html[data-theme="dark"] .bb-cat-card,
+html[data-theme="dark"] .bb-filter-card,
+html[data-theme="dark"] .bb-cart-row,
+html[data-theme="dark"] .bb-summary-card,
+html[data-theme="dark"] .bb-toast,
+html[data-theme="dark"] .bb-cms-preview,
+html[data-theme="dark"] .bb-cms-preview-toolbar,
+html[data-theme="dark"] .bb-cms-preview-content,
+html[data-theme="dark"] .bb-product-reviews,
+html[data-theme="dark"] .bb-product-review-card,
+html[data-theme="dark"] .bb-product-review-form-card,
+html[data-theme="dark"] .profile-review-card,
+html[data-theme="dark"] .profile-visit-card,
+html[data-theme="dark"] .profile-owner-card,
+html[data-theme="dark"] .section-paper {
+  border-color: var(--bb-theme-border);
+  color: var(--bb-theme-text);
+  background: var(--bb-theme-surface);
+}
+
+html[data-theme="dark"] .bb-cms-preview,
+html[data-theme="dark"] .section-cream,
+html[data-theme="dark"] .profile-review-empty,
+html[data-theme="dark"] .bb-product-review-empty,
+html[data-theme="dark"] .bb-cms-upload-empty,
+html[data-theme="dark"] .bb-cart-qty button,
+html[data-theme="dark"] .bb-cat-icon {
+  color: var(--bb-theme-text);
+  background: var(--bb-theme-surface-secondary);
+}
+
+html[data-theme="dark"] .bb-panel-title,
+html[data-theme="dark"] .bb-stat-card .val,
+html[data-theme="dark"] .bb-price,
+html[data-theme="dark"] .bb-product-name,
+html[data-theme="dark"] .bb-summary-row.total,
+html[data-theme="dark"] .bb-cms-preview-content h1,
+html[data-theme="dark"] .bb-cms-preview-toolbar > span:first-child,
+html[data-theme="dark"] .bb-product-review-author strong,
+html[data-theme="dark"] .profile-tech-tags span,
+html[data-theme="dark"] .profile-roadmap-item > b,
+html[data-theme="dark"] .bb-form-label {
+  color: var(--bb-theme-text);
+}
+
+html[data-theme="dark"] .section-sub,
+html[data-theme="dark"] .bb-stat-card .lbl,
+html[data-theme="dark"] .bb-breadcrumb,
+html[data-theme="dark"] .bb-product-stock,
+html[data-theme="dark"] .bb-modal-promo-dates,
+html[data-theme="dark"] .bb-promo-modal-note,
+html[data-theme="dark"] .bb-cms-preview-content > p,
+html[data-theme="dark"] .bb-product-review-card time,
+html[data-theme="dark"] .bb-product-review-card > p,
+html[data-theme="dark"] .bb-product-review-empty p,
+html[data-theme="dark"] .bb-product-review-list > .bb-panel-title small,
+html[data-theme="dark"] .profile-shopping-note,
+html[data-theme="dark"] .profile-float-note small,
+html[data-theme="dark"] .profile-owner-note small,
+html[data-theme="dark"] .profile-owner-card small,
+html[data-theme="dark"] .profile-section-heading > p,
+html[data-theme="dark"] .profile-journey-card p,
+html[data-theme="dark"] .profile-promise-card p,
+html[data-theme="dark"] .profile-category-description,
+html[data-theme="dark"] .profile-flow-step p,
+html[data-theme="dark"] .profile-tech-note,
+html[data-theme="dark"] .profile-roadmap-item p,
+html[data-theme="dark"] .profile-review-card > p,
+html[data-theme="dark"] .bb-review-summary > small,
+html[data-theme="dark"] .bb-dashboard-review > div span,
+html[data-theme="dark"] .bb-dashboard-review > p,
+html[data-theme="dark"] .profile-visit-address,
+html[data-theme="dark"] .about-intro > div > p,
+html[data-theme="dark"] .profile-work-list > article p,
+html[data-theme="dark"] .profile-current-flow p,
+html[data-theme="dark"] .profile-small-note,
+html[data-theme="dark"] .profile-observation-note p,
+html[data-theme="dark"] .profile-tech-list span,
+html[data-theme="dark"] .profile-about-contact-inner > div:last-child p,
+html[data-theme="dark"] .bb-customer-empty-state > span,
+html[data-theme="dark"] .bb-customer-mini-stat > span:first-child,
+html[data-theme="dark"] .bb-customer-mini-stat-link > span:first-child {
+  color: var(--bb-theme-muted);
+}
+
+html[data-theme="dark"] .profile-about-tech,
+html[data-theme="dark"] .profile-observation-note,
+html[data-theme="dark"] .bb-customer-mini-stat {
+  border-color: var(--bb-theme-border);
+  color: var(--bb-theme-text);
+  background: var(--bb-theme-surface-secondary);
+}
+
+html[data-theme="dark"] .profile-hero,
+html[data-theme="dark"] .about-intro {
+  color: var(--bb-theme-text);
+  background: #171717;
+}
+
+html[data-theme="dark"] .profile-lead,
+html[data-theme="dark"] .profile-story-copy > p,
+html[data-theme="dark"] .profile-how-copy > p,
+html[data-theme="dark"] .profile-roadmap-copy > p,
+html[data-theme="dark"] .profile-about-columns > div > p,
+html[data-theme="dark"] .profile-tech-panel > div > p {
+  color: var(--bb-theme-muted);
+}
+
+html[data-theme="dark"] .profile-hero-facts,
+html[data-theme="dark"] .profile-owner-note,
+html[data-theme="dark"] .profile-owner-card,
+html[data-theme="dark"] .profile-about-facts,
+html[data-theme="dark"] .profile-work-list,
+html[data-theme="dark"] .profile-work-list > article {
+  border-color: var(--bb-theme-border);
+}
+
+html[data-theme="dark"] .profile-hero-orbit,
+html[data-theme="dark"] .profile-hero-orbit::before,
+html[data-theme="dark"] .profile-hero-orbit::after {
+  border-color: rgba(196, 168, 143, .24);
+}
+
+html[data-theme="dark"] .profile-hero-image {
+  border-color: #2B2B2B;
+}
+
+html[data-theme="dark"] .profile-float-note {
+  border-color: var(--bb-theme-border);
+  color: var(--bb-theme-text);
+  background: rgba(36, 36, 36, .96);
+  box-shadow: 0 15px 40px -22px rgba(0, 0, 0, .7);
+}
+
+html[data-theme="dark"] .profile-note-mark,
+html[data-theme="dark"] .profile-note-heart {
+  color: #FFFFFF;
+  background: var(--bb-theme-accent);
+}
+
+html[data-theme="dark"] .profile-journey-card {
+  border-color: var(--bb-theme-border);
+  background: rgba(36, 36, 36, .9);
+}
+
+html[data-theme="dark"] .profile-story-stamp {
+  border-color: #171717;
+  color: #F2F2F2;
+  background: #765B47;
+}
+
+html[data-theme="dark"] .profile-final-cta {
+  color: #F2F2F2;
+  background: #1E1E1E;
+}
+
+html[data-theme="dark"] .profile-hero .btn-bb-outline {
+  border-color: rgba(242, 242, 242, .52);
+}
+
+html[data-theme="dark"] .profile-final-cta .btn-bb-primary,
+html[data-theme="dark"] .profile-final-cta .btn-bb-outline:hover {
+  color: #35251F;
+  background: #FFFFFF;
+}
+
+html[data-theme="dark"] .bb-input,
+html[data-theme="dark"] .form-control,
+html[data-theme="dark"] .form-select,
+html[data-theme="dark"] .bb-staff-login-input-wrap input,
+html[data-theme="dark"] input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+html[data-theme="dark"] select,
+html[data-theme="dark"] textarea {
+  border-color: var(--bb-theme-border);
+  color: var(--bb-theme-text);
+  background-color: var(--bb-theme-surface-secondary);
+}
+
+html[data-theme="dark"] .bb-input::placeholder,
+html[data-theme="dark"] .form-control::placeholder,
+html[data-theme="dark"] .bb-staff-login-input-wrap input::placeholder,
+html[data-theme="dark"] input::placeholder,
+html[data-theme="dark"] textarea::placeholder {
+  color: var(--bb-theme-muted);
+  opacity: .8;
+}
+
+html[data-theme="dark"] .bb-input:focus,
+html[data-theme="dark"] .form-control:focus,
+html[data-theme="dark"] .form-select:focus,
+html[data-theme="dark"] .bb-staff-login-input-wrap input:focus,
+html[data-theme="dark"] input:focus,
+html[data-theme="dark"] select:focus,
+html[data-theme="dark"] textarea:focus {
+  border-color: var(--bb-theme-accent);
+  color: var(--bb-theme-text);
+  background-color: var(--bb-theme-surface-secondary);
+  box-shadow: 0 0 0 3px rgba(154, 121, 95, .22);
+}
+
+html[data-theme="dark"] input[type="date"],
+html[data-theme="dark"] input[type="datetime-local"],
+html[data-theme="dark"] input[type="time"] {
+  color-scheme: dark;
+}
+
+html[data-theme="dark"] .table,
+html[data-theme="dark"] .table > :not(caption) > * > * {
+  border-color: var(--bb-theme-border);
+  color: var(--bb-theme-text);
+  background-color: var(--bb-theme-surface);
+}
+
+html[data-theme="dark"] .bb-table-bb th,
+html[data-theme="dark"] .bb-admin-shell .bb-table-bb th {
+  border-color: var(--bb-theme-border);
+  color: var(--bb-theme-muted);
+}
+
+html[data-theme="dark"] .bb-table-bb td,
+html[data-theme="dark"] .bb-admin-shell .bb-table-bb td {
+  border-color: var(--bb-theme-border);
+  color: var(--bb-theme-text);
+}
+
+html[data-theme="dark"] .bb-table-bb tbody tr:hover,
+html[data-theme="dark"] .bb-customer-shell .bb-table-bb tbody tr:hover,
+html[data-theme="dark"] .bb-admin-shell .bb-table-bb tbody tr:hover {
+  background: var(--bb-theme-surface-secondary);
+}
+
+html[data-theme="dark"] .dropdown-menu,
+html[data-theme="dark"] .modal-content,
+html[data-theme="dark"] .bb-modal-bb .modal-content,
+html[data-theme="dark"] .bb-promo-modal .modal-content,
+html[data-theme="dark"] .toast,
+html[data-theme="dark"] .bb-toast {
+  border-color: var(--bb-theme-border);
+  color: var(--bb-theme-text);
+  background-color: var(--bb-theme-surface);
+}
+
+html[data-theme="dark"] .dropdown-item,
+html[data-theme="dark"] .modal-title,
+html[data-theme="dark"] .modal-body,
+html[data-theme="dark"] .bb-modal-bb .modal-title,
+html[data-theme="dark"] .bb-toast .toast-header,
+html[data-theme="dark"] .bb-toast .toast-body {
+  color: var(--bb-theme-text);
+}
+
+html[data-theme="dark"] .bb-modal-promo-card {
+  border-color: var(--bb-theme-border);
+  color: var(--bb-theme-text);
+  background: var(--bb-theme-surface);
+}
+
+html[data-theme="dark"] .bb-modal-promo-code {
+  border-color: #51463D;
+  background: var(--bb-theme-surface-secondary);
+}
+
+html[data-theme="dark"] .bb-modal-promo-code small {
+  color: var(--bb-theme-muted);
+}
+
+html[data-theme="dark"] .bb-modal-promo-code strong {
+  color: var(--bb-theme-text);
+}
+
+html[data-theme="dark"] .bb-promo-copy-button {
+  border-color: var(--bb-theme-border);
+  color: #D0B294;
+  background: var(--bb-theme-surface);
+}
+
+html[data-theme="dark"] .bb-promo-copy-button:hover {
+  border-color: var(--bb-theme-accent);
+  color: var(--bb-theme-text);
+  background: var(--bb-theme-hover);
+}
+
+html[data-theme="dark"] .bb-modal-promo-status,
+html[data-theme="dark"] .bb-promo-copy-feedback {
+  color: #ACD3B0;
+}
+
+html[data-theme="dark"] .dropdown-item:hover,
+html[data-theme="dark"] .dropdown-item:focus {
+  color: var(--bb-theme-text);
+  background: var(--bb-theme-hover);
+}
+
+html[data-theme="dark"] .text-bg-light {
+  color: var(--bb-theme-text) !important;
+  background-color: var(--bb-theme-surface-secondary) !important;
+}
+
+html[data-theme="dark"] .modal-header,
+html[data-theme="dark"] .modal-footer,
+html[data-theme="dark"] .bb-toast .toast-header {
+  border-color: var(--bb-theme-border);
+  background: var(--bb-theme-surface-secondary);
+}
+
+html[data-theme="dark"] .btn-close {
+  filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+html[data-theme="dark"] .alert,
+html[data-theme="dark"] .bb-alert-info {
+  border-color: var(--bb-theme-border);
+  color: var(--bb-theme-text);
+  background-color: var(--bb-theme-surface-secondary);
+}
+
+html[data-theme="dark"] .alert-success {
+  border-color: #3C5941;
+  color: #ACD3B0;
+  background: #26372A;
+}
+
+html[data-theme="dark"] .alert-danger {
+  border-color: #62413B;
+  color: #F0B8AD;
+  background: #332321;
+}
+
+html[data-theme="dark"] .alert-warning {
+  border-color: #5D4C2B;
+  color: #E7CB8A;
+  background: #3A3325;
+}
+
+html[data-theme="dark"] .alert-info {
+  border-color: #3C4F58;
+  color: #B5D6E4;
+  background: #25333A;
+}
+
+html[data-theme="dark"] .bb-status-pending,
+html[data-theme="dark"] .bb-cms-status.is-draft {
+  color: #E7CB8A;
+  background: #3A3325;
+}
+
+html[data-theme="dark"] .bb-status-process {
+  color: #D0B294;
+  background: #382E27;
+}
+
+html[data-theme="dark"] .bb-status-ready,
+html[data-theme="dark"] .bb-status-shipped {
+  color: #A8D0C8;
+  background: #243633;
+}
+
+html[data-theme="dark"] .bb-status-done,
+html[data-theme="dark"] .bb-cms-status.is-published {
+  color: #ACD3B0;
+  background: #26372A;
+}
+
+html[data-theme="dark"] .bb-status-cancel {
+  color: #E6AAA4;
+  background: #3A2927;
+}
+
+html[data-theme="dark"] .bb-staff-login-main,
+html[data-theme="dark"] .bb-customer-login .bb-staff-login-main,
+html[data-theme="dark"] .bb-staff-login-card {
+  color: var(--bb-theme-text);
+  background: var(--bb-theme-bg);
+}
+
+html[data-theme="dark"] .bb-staff-login-back,
+html[data-theme="dark"] .bb-staff-login-heading > p,
+html[data-theme="dark"] .bb-staff-login-note,
+html[data-theme="dark"] .bb-staff-login-footer,
+html[data-theme="dark"] .bb-customer-login-register,
+html[data-theme="dark"] .bb-customer-login-staff-link {
+  color: var(--bb-theme-muted);
+}
+
+html[data-theme="dark"] .bb-staff-login-field label,
+html[data-theme="dark"] .bb-staff-login-heading h2 {
+  color: var(--bb-theme-text);
+}
+
+html[data-theme="dark"] .bb-staff-login-submit,
+html[data-theme="dark"] .bb-customer-login .bb-staff-login-submit {
+  border-color: #9A795F;
+  color: #FFFFFF;
+  background: #765B47;
+}
+
+html[data-theme="dark"] .bb-staff-login-submit:hover:not(:disabled),
+html[data-theme="dark"] .bb-customer-login .bb-staff-login-submit:hover:not(:disabled) {
+  background: #8A6D56;
+}
+
+html[data-theme="dark"] .bb-staff-login-alert {
+  border-color: #62413B;
+  color: #F0B8AD;
+  background: #332321;
+}
+
+html[data-theme="dark"] .bb-staff-login-alert.is-success {
+  border-color: #3C5941;
+  color: #ACD3B0;
+  background: #26372A;
+}
+
+body > .bb-theme-toggle {
+  position: fixed;
+  z-index: 1090;
+  top: 18px;
+  right: 18px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, .18);
+}
+
+html[data-theme="dark"] .bb-admin-shell {
+  background: var(--bb-theme-bg);
+}
+
+html[data-theme="dark"] .bb-admin-shell > .bb-dash-sidebar.dark {
+  border-color: var(--bb-theme-border);
+  color: var(--bb-theme-text);
+  background: var(--bb-theme-sidebar);
+  box-shadow: inset -1px 0 0 rgba(255, 255, 255, .02);
+}
+
+html[data-theme="dark"] .bb-admin-shell .bb-admin-logo small,
+html[data-theme="dark"] .bb-admin-shell .bb-admin-nav-caption {
+  color: #C8B8A7;
+}
+
+html[data-theme="dark"] .bb-admin-shell .bb-admin-subnav a,
+html[data-theme="dark"] .bb-admin-shell .bb-admin-menu-subgroup summary {
+  color: #D6D0C9;
+}
+
+html[data-theme="dark"] .bb-admin-shell .bb-admin-logo,
+html[data-theme="dark"] .bb-admin-shell .bb-admin-menu-group > summary,
+html[data-theme="dark"] .bb-admin-shell .bb-dash-nav:not(.bb-admin-subnav) > li > a,
+html[data-theme="dark"] .bb-admin-shell .bb-admin-store-link,
+html[data-theme="dark"] .bb-admin-shell .bb-admin-logout {
+  color: #F2F0ED;
+}
+
+html[data-theme="dark"] .bb-admin-shell .bb-admin-group-title > i,
+html[data-theme="dark"] .bb-admin-shell .bb-dash-nav a > i:first-child,
+html[data-theme="dark"] .bb-admin-shell .bb-admin-menu-subgroup summary > span > i:first-child,
+html[data-theme="dark"] .bb-admin-shell .bb-admin-store-link > i,
+html[data-theme="dark"] .bb-admin-shell .bb-admin-logout > i,
+html[data-theme="dark"] .bb-admin-shell .bb-admin-group-chevron,
+html[data-theme="dark"] .bb-admin-shell .bb-admin-link-end {
+  color: #B98A60;
+}
+
+html[data-theme="dark"] .bb-admin-shell .bb-admin-menu-group[open],
+html[data-theme="dark"] .bb-admin-shell > .bb-dash-sidebar.dark .bb-admin-content-group[open] {
+  border-color: var(--bb-theme-border);
+  background: var(--bb-theme-surface);
+}
+
+html[data-theme="dark"] .bb-admin-shell .bb-dash-nav a:hover,
+html[data-theme="dark"] .bb-admin-shell .bb-admin-menu-group summary:hover,
+html[data-theme="dark"] .bb-admin-shell .bb-admin-menu-subgroup summary:hover,
+html[data-theme="dark"] .bb-admin-shell .bb-admin-store-link:hover,
+html[data-theme="dark"] .bb-admin-shell .bb-admin-logout:hover {
+  border-color: var(--bb-theme-border);
+  color: #F2F0ED;
+  background: #302A26;
+}
+
+html[data-theme="dark"] .bb-admin-shell .bb-dash-nav a.active,
+html[data-theme="dark"] .bb-admin-shell .bb-admin-menu-subgroup summary.active,
+html[data-theme="dark"] .bb-admin-shell > .bb-dash-sidebar.dark .bb-admin-content-group .bb-admin-subnav a.active {
+  border-color: var(--bb-theme-border);
+  color: #F2F0ED;
+  background: #302A26;
+  box-shadow: inset 3px 0 var(--bb-theme-accent);
+}
+
+html[data-theme="dark"] .bb-admin-shell .bb-dash-nav a.active > i:first-child {
+  color: #B98A60;
+}
+
+html[data-theme="dark"] .bb-admin-secondary-nav,
+html[data-theme="dark"] .bb-admin-sidebar-bottom {
+  border-color: var(--bb-theme-border);
+}
+
+html[data-theme="dark"] .bb-admin-topbar {
+  border-color: var(--bb-theme-border);
+  background: var(--bb-theme-sidebar);
+}
+
+html[data-theme="dark"] .bb-admin-topbar-title,
+html[data-theme="dark"] .bb-dashboard-profile-copy small,
+html[data-theme="dark"] .bb-admin-shell .bb-stat-card .lbl {
+  color: var(--bb-theme-muted);
+}
+
+html[data-theme="dark"] .bb-admin-topbar-title strong,
+html[data-theme="dark"] .bb-dashboard-profile,
+html[data-theme="dark"] .bb-dashboard-profile-copy strong,
+html[data-theme="dark"] .bb-admin-shell .bb-panel-title,
+html[data-theme="dark"] .bb-admin-shell .bb-dashboard-section-heading h2,
+html[data-theme="dark"] .bb-admin-shell .bb-dashboard-welcome,
+html[data-theme="dark"] .bb-admin-shell .bb-dashboard-welcome h1,
+html[data-theme="dark"] .bb-admin-shell .bb-stat-card .val,
+html[data-theme="dark"] .bb-admin-shell .bb-table-bb td {
+  color: var(--bb-theme-text);
+}
+
+html[data-theme="dark"] .bb-dashboard-profile:hover {
+  border-color: var(--bb-theme-border);
+  color: var(--bb-theme-text);
+  background: var(--bb-theme-hover);
+}
+
+html[data-theme="dark"] .bb-dashboard-avatar,
+html[data-theme="dark"] .bb-customer-shell .bb-customer-cart-count {
+  color: var(--bb-theme-text);
+  background: var(--bb-theme-hover);
+}
+
+html[data-theme="dark"] .bb-admin-shell .bb-dash-main {
+  color: var(--bb-theme-text);
+  background: var(--bb-theme-bg);
+}
+
+html[data-theme="dark"] .bb-admin-shell .bb-panel,
+html[data-theme="dark"] .bb-admin-shell .bb-chart-card,
+html[data-theme="dark"] .bb-admin-shell .bb-stat-card {
+  border-color: var(--bb-theme-border);
+  color: var(--bb-theme-text);
+  background: var(--bb-theme-surface);
+  box-shadow: 0 8px 24px -18px rgba(0, 0, 0, .7);
+}
+
+html[data-theme="dark"] .bb-admin-shell .bb-stat-card .ic {
+  border-color: var(--bb-theme-border);
+  color: #D0B294;
+  background: var(--bb-theme-hover);
+}
+
+html[data-theme="dark"] .bb-admin-shell .bb-dashboard-eyebrow,
+html[data-theme="dark"] .bb-admin-shell .bb-dashboard-section-heading > div > span,
+html[data-theme="dark"] .bb-admin-shell .bb-dashboard-period i {
+  color: #C4A88F;
+}
+
+html[data-theme="dark"] .bb-dashboard-welcome-copy > p,
+html[data-theme="dark"] .bb-dashboard-section-heading > a,
+html[data-theme="dark"] .bb-dashboard-period {
+  color: var(--bb-theme-muted);
+}
+
+html[data-theme="dark"] .bb-dashboard-secondary-action {
+  border-color: var(--bb-theme-border);
+  color: #D0B294;
+}
+
+html[data-theme="dark"] .bb-dashboard-secondary-action:hover {
+  color: var(--bb-theme-text);
+  background: var(--bb-theme-hover);
+}
+
+html[data-theme="dark"] .bb-admin-shell .bb-filter-bar .bb-input,
+html[data-theme="dark"] .bb-admin-shell form .bb-input {
+  border-color: var(--bb-theme-border);
+  color: var(--bb-theme-text);
+  background: var(--bb-theme-surface-secondary);
+}
+
+html[data-theme="dark"] .bb-admin-shell .bb-upload-drop,
+html[data-theme="dark"] .bb-admin-shell .bb-cms-upload-empty {
+  border-color: #51463D;
+  color: var(--bb-theme-muted);
+  background: var(--bb-theme-surface-secondary);
+}
+
+html[data-theme="dark"] .bb-admin-shell .bb-cms-section-heading > span,
+html[data-theme="dark"] .bb-admin-shell .bb-cms-preview-link {
+  color: #C4A88F;
+}
+
+html[data-theme="dark"] .bb-admin-shell .bb-cms-status-help {
+  color: var(--bb-theme-muted);
+}
+
+html[data-theme="dark"] .bb-admin-menu-toggle:hover {
+  color: var(--bb-theme-text);
+  background: var(--bb-theme-hover);
+}
+
+html[data-theme="dark"] .bb-admin-shell > .bb-dash-sidebar.dark .bb-dash-nav a,
+html[data-theme="dark"] .bb-admin-shell > .bb-dash-sidebar.dark .bb-admin-content-group summary,
+html[data-theme="dark"] .bb-admin-shell > .bb-dash-sidebar.dark .bb-admin-content-group .bb-admin-subnav a {
+  color: var(--bb-theme-text);
+}
+
+html[data-theme="dark"] .bb-admin-shell > .bb-dash-sidebar.dark .bb-dash-nav a > i:first-child,
+html[data-theme="dark"] .bb-admin-shell > .bb-dash-sidebar.dark .bb-admin-content-group summary > span > i,
+html[data-theme="dark"] .bb-admin-shell > .bb-dash-sidebar.dark .bb-admin-content-group .bb-admin-subnav a > i:first-child {
+  color: var(--bb-theme-accent);
+}
+
+html[data-theme="dark"] .bb-admin-shell > .bb-dash-sidebar.dark .bb-dash-nav a:hover,
+html[data-theme="dark"] .bb-admin-shell > .bb-dash-sidebar.dark .bb-admin-content-group summary:hover,
+html[data-theme="dark"] .bb-admin-shell > .bb-dash-sidebar.dark .bb-admin-content-group .bb-admin-subnav a:hover {
+  border-color: var(--bb-theme-border);
+  color: var(--bb-theme-text);
+  background: #302A26;
+}
+
+html[data-theme="dark"] .bb-admin-shell > .bb-dash-sidebar.dark .bb-dash-nav a.active,
+html[data-theme="dark"] .bb-admin-shell > .bb-dash-sidebar.dark .bb-admin-content-group .bb-admin-subnav a.active {
+  border-color: var(--bb-theme-border);
+  color: var(--bb-theme-text);
+  background: #302A26;
+  box-shadow: inset 3px 0 var(--bb-theme-accent);
+}
+
+html[data-theme="dark"] .bb-admin-shell > .bb-dash-sidebar.dark .bb-dash-nav a.active > i:first-child {
+  color: var(--bb-theme-accent);
+}
+
+@media (max-width: 575px) {
+  .bb-nav-actions {
+    gap: 8px;
+  }
+
+  .bb-theme-toggle {
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+  }
+}
+
+@media (max-width: 767px) {
+  .bb-staff-login .bb-staff-login-story {
+    min-height: 220px;
+  }
+
+  .bb-staff-login .bb-staff-login-photo {
+    height: auto;
+    min-height: 220px;
+    overflow: visible;
+  }
+
+  .bb-staff-login .bb-staff-login-main {
+    min-height: 70svh;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body,
+  .bb-navbar,
+  .bb-admin-topbar,
+  .bb-dash-main,
+  .bb-panel,
+  .bb-chart-card,
+  .bb-stat-card,
+  .bb-product-card,
+  .bb-filter-card,
+  .bb-cart-row,
+  .bb-summary-card,
+  .bb-staff-login-main,
+  .bb-staff-login-card,
+  .bb-theme-toggle {
+    transition: none;
+  }
+}
