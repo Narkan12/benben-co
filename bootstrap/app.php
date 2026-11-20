@@ -13,6 +13,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminOnly::class,
+            'customer' => \App\Http\Middleware\CustomerOnly::class,
+            'prevent-back-cache' => \App\Http\Middleware\PreventBackCache::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

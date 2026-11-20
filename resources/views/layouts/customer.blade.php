@@ -38,10 +38,7 @@
             </div>
             <div class="bb-admin-sidebar-bottom">
                 <a href="{{ route('home') }}" class="bb-admin-store-link"><i class="bi bi-arrow-up-right-square"></i><span>Kembali ke website</span></a>
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit" class="bb-admin-logout"><i class="bi bi-box-arrow-left"></i><span>Keluar dari akun</span></button>
-                </form>
+                <button type="button" class="bb-admin-logout" data-bs-toggle="modal" data-bs-target="#logout-confirm-modal"><i class="bi bi-box-arrow-left"></i><span>Keluar dari akun</span></button>
             </div>
         </aside>
         <button type="button" class="bb-admin-sidebar-backdrop" data-customer-sidebar-close aria-label="Tutup menu"></button>
@@ -72,6 +69,7 @@
             </main>
         </div>
     </div>
+    <x-logout-modal :action="route('logout')" />
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ asset('js/form-inputs.js') }}"></script>
     <script>

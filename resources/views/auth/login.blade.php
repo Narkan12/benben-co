@@ -17,7 +17,7 @@
     <main class="bb-staff-login-layout">
         <section class="bb-staff-login-story" aria-label="BENBEN CO. Bakery">
             <div class="bb-staff-login-photo" role="img" aria-label="Produk BENBEN CO. Bakery"
-                 style="background-image:linear-gradient(180deg,rgba(36,20,14,.08) 10%,rgba(36,20,14,.78) 100%),url('{{ route('media.show', ['path' => 'images/hero.jpg']) }}');">
+                 style="background-image:linear-gradient(180deg,rgba(36,20,14,.08) 10%,rgba(36,20,14,.78) 100%),url('{{ route('media.show', ['path' => 'images/bolen-lilit.png']) }}');">
                 <a href="{{ route('home') }}" class="bb-staff-login-brand">
                     <span class="bb-staff-login-mark"><i class="bi bi-egg-fried" aria-hidden="true"></i></span>
                     <span>BENBEN CO.<small>BAKERY · ANTAPANI</small></span>
@@ -76,6 +76,12 @@
                         <i class="bi bi-arrow-right" aria-hidden="true"></i>
                     </button>
                 </form>
+
+                <div class="bb-auth-divider" aria-label="atau"><span>OR</span></div>
+                <a href="{{ route('google.redirect', ['intent' => 'customer']) }}" class="bb-google-button">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M21.35 12.2c0-.74-.07-1.45-.19-2.13H12v4.03h5.25a4.49 4.49 0 0 1-1.95 2.95v2.68h3.16c1.85-1.7 2.89-4.21 2.89-7.53Z"/><path fill="#34A853" d="M12 22c2.64 0 4.85-.88 6.47-2.27l-3.16-2.68c-.88.59-2 0.94-3.31.94-2.55 0-4.71-1.72-5.48-4.04H3.25v2.76A10 10 0 0 0 12 22Z"/><path fill="#FBBC05" d="M6.52 13.95A6 6 0 0 1 6.2 12c0-.68.12-1.34.32-1.95V7.29H3.25A10 10 0 0 0 2 12c0 1.61.38 3.13 1.25 4.71l3.27-2.76Z"/><path fill="#EA4335" d="M12 6.01c1.44 0 2.72.49 3.73 1.45l2.81-2.81A9.65 9.65 0 0 0 12 2a10 10 0 0 0-8.75 5.29l3.27 2.76C7.29 7.73 9.45 6.01 12 6.01Z"/></svg>
+                    <span>Continue with Google</span>
+                </a>
 
                 <p class="bb-customer-login-register">Belum punya akun? <a href="{{ route('register') }}">Daftar sebagai pelanggan</a></p>
                 <p class="bb-staff-login-note"><i class="bi bi-person-check" aria-hidden="true"></i> Halaman ini khusus akun pembeli.</p>

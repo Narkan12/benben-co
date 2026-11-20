@@ -52,6 +52,12 @@
 
     <x-footer />
 
+    @auth
+        @if(auth()->user()->role === 'customer')
+            <x-logout-modal :action="route('logout')" />
+        @endif
+    @endauth
+
     {{-- Bootstrap 5 JS bundle --}}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 

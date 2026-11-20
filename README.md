@@ -229,7 +229,7 @@ Checkout hanya dapat dilakukan customer yang sudah login. Guest yang membuka URL
 
 Kode promo dicocokkan tanpa membedakan huruf besar/kecil. Promo contoh `BAKERY20` memberi potongan tetap Rp20.000, bukan 20%; promo nominal memotong nilai tetap hingga maksimal subtotal produk, sedangkan promo persen memotong sesuai persentase subtotal. Ongkos kirim dihitung setelah diskon produk. Promo publik hanya ditampilkan jika statusnya aktif dan tanggal hari ini berada di antara tanggal mulai dan berakhir. Checkout membaca promo dari database, bukan dari harga/diskon kiriman browser. Tabel promo saat ini belum memiliki kuota pemakaian, minimal belanja, atau batas per pelanggan; sistem tidak menerapkan aturan-aturan tersebut.
 
-Saat beranda Company Profile dimuat dan ada promo yang sedang berlaku, modal promo otomatis menampilkan kode, nilai diskon, dan periode pemakaian. Tombol **Salin kode** menyalin kode promo ke clipboard. Batas pemakaian yang ditampilkan mengikuti tanggal mulai dan berakhir promo; karena database belum mengatur kuota atau batas per pelanggan, modal juga menjelaskan bahwa kuota terpisah belum diterapkan.
+Saat beranda Company Profile dimuat dan ada promo yang sedang berlaku, modal promo otomatis menampilkan kode, nilai diskon, dan periode pemakaian. Tombol **Salin kode** menyalin kode promo ke clipboard. Batas pemakaian yang ditampilkan mengikuti tanggal mulai dan berlakunya promo; karena database belum mengatur kuota atau batas per pelanggan, modal juga menjelaskan bahwa kuota terpisah belum diterapkan.
 
 ## 12. Alur WhatsApp
 
@@ -594,3 +594,63 @@ node --check public/js/receipt.js
 Tes fitur memverifikasi redirect guest pada URL transaksi, pemulihan URL tujuan setelah login, isolasi cart antar-customer, akses dashboard admin/customer, pembatasan pesanan customer lain, serta rendering struk transaksi pendek dan panjang (termasuk seluruh item bernama panjang). Pada pemeriksaan terakhir, `php vendor\bin\phpunit` lulus dengan **41 tes dan 319 assertions**. `php artisan route:list`, `php artisan view:cache`/`view:clear`, pemeriksaan sintaks PHP dan JavaScript lulus. Server lokal merespons HTTP 200; beranda dan modal promo diperiksa di browser, dan modal tidak lagi memiliki scroll horizontal yang tidak diperlukan.
 
 Cetak fisik dan print preview pada printer thermal tetap perlu dicoba manual karena ukuran maksimum halaman dan skala dapat berbeda menurut driver. Pilih lebar yang sama dengan roll (58 mm atau 80 mm), gunakan transaksi pendek dan panjang, dan pastikan nama produk, harga, total, pembayaran, serta kembalian tidak terpotong.
+
+## 11. Google OAuth Login dan Register
+
+Project memakai Laravel Socialite untuk Google OAuth. Kredensial dibaca dari environment dan tidak ditulis pada source code:
+
+```dotenv
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_REDIRECT_URI=http://127.0.0.1:8000/auth/google/callback
+```
+
+Tambahkan redirect URI tersebut pada Google Cloud Console → Credentials → Authorized redirect URIs. Untuk deployment ubah `APP_URL` dan `GOOGLE_REDIRECT_URI` sesuai domain production dengan HTTPS, lalu jalankan `php artisan config:clear`.
+
+- `/login` menyediakan tombol **Continue with Google** untuk customer.
+- `/register` menyediakan tombol **Sign up with Google** untuk customer baru atau akun customer lama yang sudah terhubung.
+- `/admin/login` menyediakan tombol **Sign in with Google** hanya untuk akun yang sudah memiliki role `admin` atau `kasir`.
+
+Tidak ada proses yang membuat role admin secara otomatis. Customer baru Google dibuat dengan role `customer` dan profil customer yang terhubung. Jika email sudah terdaftar, pengaitan Google tidak dilakukan otomatis: pengguna harus login sekali dengan username/email dan password agar pengaitan dilakukan setelah autentikasi password berhasil.
+
+Google OAuth membutuhkan email valid dan terverifikasi. Callback menangani pembatalan atau kegagalan OAuth dengan pesan yang aman. Jalankan migration dan bersihkan cache setelah perubahan:
+
+```bash
+php artisan migrate
+php artisan config:clear
+php artisan route:clear
+```
+
+Google Login belum dinyatakan berhasil sampai kredensial Google Cloud dan Authorized redirect URI dikonfirmasi serta pengujian browser berhasil dilakukan.
+
+## 22. Google Account Seeder, Logout Modal, dan Pembatasan Route
+
+### Seeder akun Google dummy
+
+Gunakan seeder khusus untuk membuat akun pengujian Google tanpa menimpa akun yang sudah ada:
+
+```bash
+php artisan db:seed --class=Database\\Seeders\\GoogleUserSeeder
+```
+
+Seeder membuat dua contoh akun pengujian yang memakai kolom `google_id`:
+
+- `google.customer.demo@example.com`, role `customer`, terhubung ke profil `customers`.
+- `google.admin.demo@example.com`, role `admin`, tanpa akses profil customer.
+
+Seeder tidak menyimpan password Google dan hanya menjalankan `firstOrCreate()` berdasarkan `google_id`. Akun Google nyata tetap dibuat melalui callback OAuth. Jangan menjalankan `migrate:fresh` atau menghapus data pengguna untuk pengujian.
+
+### Logout
+
+Logout Admin dan Customer memakai satu mekanisme Laravel `POST` dengan CSRF. Modal **Konfirmasi Logout** tersedia pada sidebar Admin, sidebar Customer, dan footer public untuk customer yang login. Pilihan Batal hanya menutup modal. Pilihan Ya, Logout memanggil `AuthController::logout()`, menutup session aktif, menghapus session Laravel, dan meregenerasi CSRF token. Relasi `google_id`, profil, pesanan, dan akun tidak dihapus saat logout.
+
+Middleware `prevent-back-cache` menambahkan header anti-cache pada route cart, checkout, dashboard customer, dan seluruh route internal admin sehingga tombol Back tidak menampilkan halaman internal dari cache browser.
+
+### Pembatasan route
+
+- Route `/customer/**` dilindungi `CustomerOnly` dan hanya menerima role `customer`.
+- Route `/admin/**` dilindungi `AdminOnly` dan hanya menerima role `admin` atau `kasir`.
+- Route pesanan customer memfilter `customer_id` dari akun login sebelum `findOrFail()`, sehingga customer tidak dapat melihat pesanan milik customer lain.
+- Guest diarahkan ke `/login` atau `/admin/login` sesuai route yang dibuka.
+- Customer yang membuka URL admin ditolak oleh middleware AdminOnly.
+- Google tidak dapat mengubah role pengguna atau membuat role admin secara otomatis.

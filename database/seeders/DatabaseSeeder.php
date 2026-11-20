@@ -28,7 +28,10 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        $this->call(ProductSeeder::class);
+        $this->call([
+            GoogleUserSeeder::class,
+            ProductSeeder::class,
+        ]);
 
         Promotion::query()->updateOrCreate(
             ['kode_promo' => 'WELCOME10'],

@@ -120,10 +120,7 @@
 
             <div class="bb-admin-sidebar-bottom">
                 <a href="{{ route('home') }}" class="bb-admin-store-link"><i class="bi bi-arrow-up-right-square"></i><span>Lihat website</span></a>
-                <form method="POST" action="{{ route('admin.logout') }}">
-                    @csrf
-                    <button type="submit" class="bb-admin-logout"><i class="bi bi-box-arrow-left"></i><span>Keluar dari akun</span></button>
-                </form>
+                <button type="button" class="bb-admin-logout" data-bs-toggle="modal" data-bs-target="#logout-confirm-modal"><i class="bi bi-box-arrow-left"></i><span>Keluar dari akun</span></button>
             </div>
         </aside>
 
@@ -169,7 +166,7 @@
         </div>
     </div>
     <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:1080;" data-order-toast-container aria-live="polite"></div>
-
+    <x-logout-modal :action="route('admin.logout')" />
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
     <script src="{{ asset('js/admin.js') }}"></script>

@@ -43,7 +43,21 @@ class AuthController extends Controller
             ->whereIn('role', ['admin', 'kasir'])
             ->first();
 
+        if ($user && ! (bool) ($user->is_active ?? true)) {
+            return back()->withErrors(['username' => 'Akun admin atau kasir tidak aktif.'])->onlyInput('username');
+        }
+
         if ($user && Auth::attempt($credentials)) {
+            $pending = $request->session()->pull('google_link_pending');
+            if (is_array($pending)
+                && ($pending['intent'] ?? null) === 'admin'
+                && hash_equals(strtolower((string) ($pending['email'] ?? '')), strtolower((string) $user->email))
+                && in_array($user->role, ['admin', 'kasir'], true)
+                && ! User::query()->where('google_id', (string) ($pending['google_id'] ?? ''))->where('id_user', '!=', $user->id_user)->exists()) {
+                $user->google_id = (string) $pending['google_id'];
+                $user->save();
+            }
+
             $request->session()->regenerate();
             UserSession::syncExpiredSessions($user->id_user);
             UserSession::registerActiveSession($user, $request);
@@ -74,11 +88,25 @@ class AuthController extends Controller
             })
             ->first();
 
+        if ($user && ! (bool) ($user->is_active ?? true)) {
+            return back()->withErrors(['username' => 'Akun pelanggan tidak aktif.'])->onlyInput('username');
+        }
+
         if ($user && Auth::attempt([
             'username' => $user->username,
             'password' => $credentials['password'],
             'role' => 'customer',
         ])) {
+            $pending = $request->session()->pull('google_link_pending');
+            if (is_array($pending)
+                && ($pending['intent'] ?? null) === 'customer'
+                && hash_equals(strtolower((string) ($pending['email'] ?? '')), strtolower((string) $user->email))
+                && $user->role === 'customer'
+                && ! User::query()->where('google_id', (string) ($pending['google_id'] ?? ''))->where('id_user', '!=', $user->id_user)->exists()) {
+                $user->google_id = (string) $pending['google_id'];
+                $user->save();
+            }
+
             $request->session()->regenerate();
             UserSession::syncExpiredSessions($user->id_user);
             UserSession::registerActiveSession($user, $request);

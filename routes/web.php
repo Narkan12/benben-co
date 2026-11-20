@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminPageController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\OrderController;
@@ -25,7 +26,7 @@ Route::post('/products/{product}/review', [OrderController::class, 'submitReview
 Route::get('/promotions', [PublicStoreController::class, 'promos'])->name('promotions');
 Route::get('/contact', [PublicStoreController::class, 'contact'])->name('contact');
 
-Route::middleware(CustomerOnly::class)->group(function () {
+Route::middleware([CustomerOnly::class, 'prevent-back-cache'])->group(function () {
     Route::get('/cart', [PublicStoreController::class, 'cart'])->name('cart');
     Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
     Route::post('/cart/{productId}/update', [CartController::class, 'update'])->name('cart.update');
@@ -43,7 +44,13 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/register', fn () => view('auth.register'))->name('register');
 Route::post('/register', [AuthController::class, 'register'])->name('register.submit');
 
-Route::prefix('customer')->name('customer.')->middleware(CustomerOnly::class)->group(function () {
+Route::get('/auth/google/{intent}', [GoogleController::class, 'redirect'])
+    ->whereIn('intent', ['customer', 'admin'])
+    ->name('google.redirect');
+Route::get('/auth/google/callback', [GoogleController::class, 'callback'])
+    ->name('google.callback');
+
+Route::prefix('customer')->name('customer.')->middleware([CustomerOnly::class, 'prevent-back-cache'])->group(function () {
     Route::get('/dashboard', [OrderController::class, 'dashboard'])->name('dashboard');
     Route::get('/profile', [OrderController::class, 'profile'])->name('profile');
     Route::get('/security', [OrderController::class, 'security'])->name('security');
@@ -60,7 +67,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    Route::middleware(AdminOnly::class)->group(function () {
+    Route::middleware([AdminOnly::class, 'prevent-back-cache'])->group(function () {
         Route::get('/payment-proofs/{path}', [StorageImageController::class, 'paymentProof'])
             ->where('path', '.*')
             ->name('payments.proof');

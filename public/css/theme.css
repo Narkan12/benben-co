@@ -101,42 +101,6 @@ html,
   background: var(--bb-scroll-track);
 }
 
-.bb-staff-login {
-  margin: 0;
-  height: auto;
-  min-height: 100vh;
-  min-height: 100svh;
-  overflow-x: hidden;
-  overflow-y: auto;
-}
-
-.bb-staff-login .bb-staff-login-layout {
-  height: auto;
-  min-height: 100vh;
-  min-height: 100svh;
-  min-width: 0;
-  overflow: visible;
-}
-
-.bb-staff-login .bb-staff-login-story {
-  height: auto;
-  min-height: 100vh;
-  min-height: 100svh;
-  overflow: visible;
-}
-
-.bb-staff-login .bb-staff-login-main {
-  height: auto;
-  min-height: 100vh;
-  min-height: 100svh;
-  min-width: 0;
-  overflow: visible;
-}
-
-.bb-staff-login.bb-customer-register-page .bb-staff-login-main {
-  overflow-y: visible;
-}
-
 html[data-theme="dark"] body {
   background-color: var(--bb-theme-bg);
   color: var(--bb-theme-text);
@@ -892,34 +856,6 @@ html[data-theme="dark"] .bb-admin-shell > .bb-dash-sidebar.dark .bb-admin-conten
 
 html[data-theme="dark"] .bb-admin-shell > .bb-dash-sidebar.dark .bb-dash-nav a.active > i:first-child {
   color: var(--bb-theme-accent);
-}
-
-@media (max-width: 575px) {
-  .bb-nav-actions {
-    gap: 8px;
-  }
-
-  .bb-theme-toggle {
-    width: 36px;
-    height: 36px;
-    flex-basis: 36px;
-  }
-}
-
-@media (max-width: 767px) {
-  .bb-staff-login .bb-staff-login-story {
-    min-height: 220px;
-  }
-
-  .bb-staff-login .bb-staff-login-photo {
-    height: auto;
-    min-height: 220px;
-    overflow: visible;
-  }
-
-  .bb-staff-login .bb-staff-login-main {
-    min-height: 70svh;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

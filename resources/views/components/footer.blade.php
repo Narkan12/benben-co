@@ -34,10 +34,7 @@
                             <li><a href="{{ route('customer.dashboard') }}">Dashboard Saya</a></li>
                             <li><a href="{{ route('customer.orders') }}">Pesanan Saya</a></li>
                             <li>
-                                <form method="POST" action="{{ route('logout') }}" class="d-inline">
-                                    @csrf
-                                    <button type="submit" class="bb-footer-link-button">Logout</button>
-                                </form>
+                                <button type="button" class="bb-footer-link-button" data-bs-toggle="modal" data-bs-target="#logout-confirm-modal">Logout</button>
                             </li>
                         @else
                             <li><a href="{{ route('admin.dashboard') }}">Dashboard Admin</a></li>
