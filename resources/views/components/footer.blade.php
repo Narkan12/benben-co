@@ -11,7 +11,9 @@
                 </p>
                 <div class="bb-footer-social">
                     <a href="https://www.instagram.com/benbenco.id/" target="_blank" rel="noopener noreferrer" aria-label="Instagram BENBEN CO."><i class="bi bi-instagram"></i></a>
-                    <a href="https://wa.me/628139494009" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp BENBEN CO."><i class="bi bi-whatsapp"></i></a>
+                    @if($whatsappAdminNumber)
+                        <a href="https://wa.me/{{ $whatsappAdminNumber }}" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp BENBEN CO."><i class="bi bi-whatsapp"></i></a>
+                    @endif
                 </div>
             </div>
 
@@ -52,7 +54,9 @@
                 <h5>Hubungi Kami</h5>
                 <ul class="bb-footer-links">
                     <li><i class="bi bi-geo-alt me-1"></i> Antapani, Bandung</li>
-                    <li><i class="bi bi-whatsapp me-1"></i> +62 813-9494-009</li>
+                    @if($whatsappAdminNumber)
+                        <li><i class="bi bi-whatsapp me-1"></i> +{{ $whatsappAdminNumber }}</li>
+                    @endif
                     <li><i class="bi bi-envelope me-1"></i> hello@benbenco.id</li>
                     <li><i class="bi bi-clock me-1"></i> Setiap hari, 08.00–20.00</li>
                 </ul>

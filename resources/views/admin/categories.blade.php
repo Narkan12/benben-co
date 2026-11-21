@@ -27,11 +27,12 @@
                             <td>
                                 <div class="bb-action-icons">
                                     <button type="button" title="Edit" data-bs-toggle="modal" data-bs-target="#categoryModal" data-edit-category data-action="{{ route('admin.categories.update', $cat->id_category) }}" data-name="{{ $cat->nama_kategori }}" data-slug="{{ $cat->slug }}"><i class="bi bi-pencil"></i></button>
-                                    <form method="POST" action="{{ route('admin.categories.delete', $cat->id_category) }}" onsubmit="return confirm('Yakin ingin menghapus kategori ini?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" title="Hapus" @disabled($cat->products_count > 0)><i class="bi bi-trash3"></i></button>
-                                    </form>
+                                    <button type="button" title="Hapus" aria-label="Hapus {{ $cat->nama_kategori }}"
+                                        data-bs-toggle="modal" data-bs-target="#crud-delete-confirm-modal"
+                                        data-crud-delete data-delete-action="{{ route('admin.categories.delete', $cat->id_category) }}"
+                                        data-delete-name="{{ $cat->nama_kategori }}" @disabled($cat->products_count > 0)>
+                                        <i class="bi bi-trash3"></i>
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -45,8 +46,8 @@
     </div>
 
     <div class="modal fade bb-modal-bb" id="categoryModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bb-crud-modal">
                 <div class="modal-header">
                     <h5 class="modal-title">Tambah Kategori</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -72,5 +73,7 @@
             </div>
         </div>
     </div>
+
+    <x-crud-delete-modal />
 
 @endsection

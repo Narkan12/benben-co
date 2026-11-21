@@ -33,7 +33,9 @@
             <img src="{{ route('media.show', ['path' => 'images/logo.png']) }}" alt="BENBEN CO." width="56" height="56" class="receipt-logo">
             <div class="receipt-brand">BENBEN CO. BAKERY</div>
             <div class="receipt-meta">Jl. Raya Bakery No. 24, Bandung</div>
-            <div class="receipt-meta">Telp: 0813-9494-009</div>
+            @if($whatsappAdminNumber)
+                <div class="receipt-meta">Telp: +{{ $whatsappAdminNumber }}</div>
+            @endif
         </div>
 
         <div class="receipt-info">

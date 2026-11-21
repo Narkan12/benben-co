@@ -427,7 +427,7 @@
             @else
                 <div class="profile-review-empty">
                     <span aria-hidden="true">♡</span>
-                    <div><h3>Jadilah cerita pertama.</h3><p>Belum ada ulasan yang dibagikan. Setelah mencicipi produk, pelanggan dapat memberi rating di halaman detail produk.</p></div>
+                    <div><h3 class="profile-eyebrow">Jadilah cerita pertama.</h3><p>Belum ada ulasan yang dibagikan. Setelah mencicipi produk, pelanggan dapat memberi rating di halaman detail produk.</p></div>
                     <a href="{{ route('products') }}" class="btn-bb btn-bb-outline btn-bb-sm">Jelajahi produk</a>
                 </div>
             @endif
@@ -454,7 +454,9 @@
                     <h3>BENBEN CO. Bakery</h3>
                     <p class="profile-visit-address">Komp. Sinergi Antapani,<br>Jl. Nyaman No.33B, Antapani Tengah,<br>Kec. Antapani, Kota Bandung,<br>Jawa Barat 40291</p>
                     <div class="profile-contact-links">
-                        <a href="https://wa.me/628139494009" target="_blank" rel="noopener"><span aria-hidden="true">↗</span><span><small>WHATSAPP</small><strong>+62 813-9494-009</strong></span></a>
+                        @if($whatsappAdminNumber)
+                            <a href="https://wa.me/{{ $whatsappAdminNumber }}" target="_blank" rel="noopener"><span aria-hidden="true">↗</span><span><small>WHATSAPP</small><strong>+{{ $whatsappAdminNumber }}</strong></span></a>
+                        @endif
                         <a href="https://www.instagram.com/benbenco.id/" target="_blank" rel="noopener"><span aria-hidden="true">◎</span><span><small>INSTAGRAM</small><strong>@benbenco.id</strong></span></a>
                     </div>
                     <a class="btn-bb btn-bb-primary profile-map-button" href="https://www.google.com/maps/search/?api=1&amp;query=Komp.+Sinergi+Antapani%2C+Jl.+Nyaman+No.33B%2C+Antapani+Tengah%2C+Bandung+40291" target="_blank" rel="noopener">Buka Google Maps <span aria-hidden="true">↗</span></a>
@@ -476,7 +478,7 @@
                     @if(auth()->user()->role === 'customer')
                         <a href="{{ route('customer.orders') }}" class="btn-bb btn-bb-outline">Lihat pesanan saya</a>
                     @else
-                        <a href="https://wa.me/628139494009" target="_blank" rel="noopener" class="btn-bb btn-bb-outline">Hubungi via WhatsApp</a>
+                        <a href="{{ $whatsappAdminNumber ? 'https://wa.me/'.$whatsappAdminNumber : route('contact') }}" target="_blank" rel="noopener" class="btn-bb btn-bb-outline">Hubungi {{ $whatsappAdminNumber ? 'via WhatsApp' : 'kami' }}</a>
                     @endif
                 @endguest
             </div>

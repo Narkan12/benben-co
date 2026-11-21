@@ -23,8 +23,13 @@
                 <div class="d-flex justify-content-center gap-3 flex-wrap mt-4">
                     @if($whatsappUrl)
                         <a href="{{ $whatsappUrl }}" class="btn-bb btn-bb-primary" target="_blank" rel="noopener">
-                            Konfirmasi via WhatsApp
+                            Hubungi Admin via WhatsApp
                         </a>
+                    @else
+                        <p class="section-sub small mb-0 align-self-center" role="status">
+                            WhatsApp admin belum dikonfigurasi.
+                            <a href="mailto:hello@benbenco.id">Hubungi kami via email</a>.
+                        </p>
                     @endif
                     <a href="{{ url('/products') }}" class="btn-bb btn-bb-primary">Lanjut Belanja</a>
                 </div>

@@ -9,6 +9,7 @@ Kode sengaja memakai struktur Laravel standar dan logika langsung di controller 
 ## 2. Teknologi
 
 - Laravel 12 dan PHP 8.3+
+- Ekstensi PHP `pdo_mysql`; `zip` untuk ekspor XLSX
 - MySQL
 - Blade dan Eloquent ORM
 - Bootstrap 5 melalui CDN
@@ -36,7 +37,7 @@ Kode sengaja memakai struktur Laravel standar dan logika langsung di controller 
 
 ## 4. Alur Aplikasi
 
-**Customer:** Home → Products → Detail → Login/registrasi → Cart → Checkout → halaman sukses/WhatsApp. Cart disimpan di session Laravel dan diikat ke akun pelanggan aktif. Customer dapat melihat dashboard, riwayat, detail, bukti pembayaran, serta histori status pesanan.
+**Customer:** Home → Products → Detail → Login/registrasi → Cart → Checkout → bukti pemesanan/WhatsApp. Cart disimpan di session Laravel dan diikat ke akun pelanggan aktif. Customer dapat melihat dashboard, riwayat, detail, bukti pembayaran, serta histori status pesanan.
 
 **Admin/kasir:** Login → Dashboard → CRUD Produk / Orders / POS. Admin juga dapat mengelola kategori, stok, promo, pembayaran, pelanggan, dan laporan.
 
@@ -151,7 +152,7 @@ Migration menyimpan riwayat struktur database. `php artisan migrate` menjalankan
 | `categories` | Nama dan slug kategori |
 | `products` | Kategori, nama, deskripsi, harga, gambar, stok, status |
 | `customers` | Nama, WhatsApp, alamat (tanpa akun login customer) |
-| `orders` | Kode pesanan, total, status, pembayaran, pengiriman, waktu admin melihat notifikasi |
+| `orders` | Kode pesanan, token idempotensi checkout, total, status, pembayaran, pengiriman, penanda notifikasi WhatsApp dan waktu admin melihat notifikasi |
 | `order_details` | Produk, harga saat dipesan, jumlah, subtotal |
 | `ratings` | Rating, nama pemberi ulasan, komentar |
 | `promotions` | Kode, jenis/nilai diskon, tanggal berlaku |
@@ -225,15 +226,56 @@ Checkout hanya dapat dilakukan customer yang sudah login. Guest yang membuka URL
 4. `store()` memvalidasi data form dan memeriksa ulang promo.
 5. Di dalam transaksi database, baris promo dan produk dikunci; stok diperiksa, lalu customer, order, detail order, serta log stok dibuat.
 6. Semua perubahan database berhasil bersama-sama atau dibatalkan bersama-sama. Stok berkurang hanya saat penyimpanan berhasil.
-7. Session cart dihapus dan customer diarahkan ke halaman sukses.
+7. Setelah commit, session cart dihapus, notifikasi admin dijadwalkan jika Cloud API terkonfigurasi, lalu customer diarahkan ke bukti pemesanan dengan tautan Click-to-Chat.
 
 Kode promo dicocokkan tanpa membedakan huruf besar/kecil. Promo contoh `BAKERY20` memberi potongan tetap Rp20.000, bukan 20%; promo nominal memotong nilai tetap hingga maksimal subtotal produk, sedangkan promo persen memotong sesuai persentase subtotal. Ongkos kirim dihitung setelah diskon produk. Promo publik hanya ditampilkan jika statusnya aktif dan tanggal hari ini berada di antara tanggal mulai dan berakhir. Checkout membaca promo dari database, bukan dari harga/diskon kiriman browser. Tabel promo saat ini belum memiliki kuota pemakaian, minimal belanja, atau batas per pelanggan; sistem tidak menerapkan aturan-aturan tersebut.
 
 Saat beranda Company Profile dimuat dan ada promo yang sedang berlaku, modal promo otomatis menampilkan kode, nilai diskon, dan periode pemakaian. Tombol **Salin kode** menyalin kode promo ke clipboard. Batas pemakaian yang ditampilkan mengikuti tanggal mulai dan berlakunya promo; karena database belum mengatur kuota atau batas per pelanggan, modal juga menjelaskan bahwa kuota terpisah belum diterapkan.
 
-## 12. Alur WhatsApp
+## 12. Integrasi WhatsApp
 
-Halaman sukses mengambil order beserta detail produk. Controller menyusun pesan berisi daftar produk, total, nama, alamat, catatan, dan kode pesanan. Pesan di-encode dengan `rawurlencode()` lalu dimasukkan ke link WhatsApp nomor `628139494009`. Customer menekan tombol untuk membuka WhatsApp; browser tidak mengirim pesan tanpa tindakan customer.
+### Click-to-Chat untuk pelanggan
+
+Setelah checkout tersimpan, customer diarahkan ke bukti pemesanan. Tombol **Hubungi Admin via WhatsApp** membuka `wa.me` dengan ringkasan yang dibangun dari order, customer, dan rincian produk yang sudah tersimpan: nomor order, nama, produk/kuantitas, total, metode pembayaran, dan pengiriman. Pesan hanya disiapkan; customer tetap harus menekan tombol kirim di WhatsApp. Tautan yang sama tersedia pada halaman sukses lama. Formulir kontak umum juga menyiapkan pesan Click-to-Chat dari nama, email, subjek, dan pesan; formulir itu tidak mengirim otomatis.
+
+Nomor admin memakai `WHATSAPP_ADMIN_NUMBER` dalam format internasional (kode negara, tanpa tanda `+`). Nomor harus diisi di `.env`; tanpa nomor yang valid, tombol Click-to-Chat tidak ditampilkan. Tautan ini tidak memerlukan token API.
+
+### Notifikasi otomatis untuk admin
+
+Notifikasi menggunakan **Meta WhatsApp Business Platform Cloud API** resmi, bukan gateway WhatsApp tidak resmi. Aplikasi mengirim pesan template yang sudah disetujui Meta ke nomor admin setelah transaksi database berhasil commit. Isi template memuat kode pesanan, nama dan nomor WhatsApp customer, ringkasan produk/kuantitas, jumlah item, total, metode pembayaran/pengiriman, dan waktu pesan. Alamat serta catatan pelanggan tidak dikirim.
+
+Lengkapi variabel berikut di `.env`:
+
+```dotenv
+WHATSAPP_ADMIN_NUMBER=
+WHATSAPP_CLOUD_API_TOKEN=
+WHATSAPP_PHONE_NUMBER_ID=
+WHATSAPP_CLOUD_API_VERSION=
+WHATSAPP_ORDER_TEMPLATE_NAME=
+WHATSAPP_ORDER_TEMPLATE_LANGUAGE=id
+```
+
+Siapkan Meta Business Portfolio, WhatsApp Business Account, nomor pengirim Cloud API, dan system-user access token dengan izin pengiriman pesan WhatsApp. Daftarkan serta minta persetujuan template kategori utility dengan bahasa yang dipilih dan sembilan placeholder body berurutan:
+
+```text
+PESANAN BARU BENBEN CO.
+Nomor Pesanan: {{1}}
+Pelanggan: {{2}}
+WhatsApp: {{3}}
+Produk: {{4}}
+Jumlah Produk: {{5}}
+Total: {{6}}
+Pembayaran: {{7}}
+Pengiriman: {{8}}
+Waktu: {{9}}
+Silakan periksa dashboard admin untuk memproses pesanan.
+```
+
+Isi `WHATSAPP_PHONE_NUMBER_ID`, versi Graph API yang masih didukung Meta, nama template yang disetujui, dan kode bahasa template. Jangan menyimpan token di source control; credential hanya berada di `.env`. Jika konfigurasi belum lengkap, checkout tetap berhasil, pengiriman tidak dijadwalkan, dan nama variabel yang belum diisi dicatat pada log aplikasi.
+
+Queue memakai koneksi `database` bawaan project. Terapkan migration, lalu jalankan worker terus-menerus di server (contoh lokal: `php artisan queue:work --tries=3 --timeout=30`; production sebaiknya diawasi Supervisor atau process manager). Job hanya dijadwalkan setelah transaksi commit, mencoba ulang dengan jeda, dan menulis kegagalan final ke log serta `failed_jobs`. Token unik checkout mencegah POST ganda membuat order baru; job unik per order dan `whatsapp_notified_at` mencegah pengiriman ulang setelah sukses tercatat. Belum ada notifikasi perubahan status pesanan.
+
+Pengujian aplikasi menggunakan HTTP fake dan memverifikasi endpoint/payload, bukan mengirim pesan sungguhan. Pengiriman otomatis baru dapat dinyatakan aktif setelah kredensial, template, opt-in penerima, dan worker dikonfigurasi lalu diuji pada nomor WhatsApp admin. Pengiriman template oleh Meta dikenakan tarif per pesan terkirim yang bergantung pada kategori dan negara penerima; cek tarif terbaru pada [halaman harga resmi Meta](https://developers.facebook.com/docs/whatsapp/pricing/). Meta dapat meminta persetujuan akun/template dan metode pembayaran.
 
 ## 13. Alur POS
 
@@ -346,9 +388,11 @@ Ikuti alur route → controller → model → view. Jika mengubah satu fitur, te
 ### Edit checkout dan WhatsApp
 
 - Route: `checkout`, `checkout.store`, `checkout.success`
-- Controller: `CheckoutController@index/store`, `PublicStoreController@success`
+- Controller: `CheckoutController@index/store`, `PublicStoreController@success`, `OrderController@proof`
 - Model: `Customer`, `Order`, `OrderDetail`, `Product`, `Promotion`, `StockLog`
-- View: `resources/views/checkout.blade.php`, `resources/views/success.blade.php`
+- View: `resources/views/checkout.blade.php`, `resources/views/customer/order-proof.blade.php`, `resources/views/success.blade.php`
+- Provider/API: `App\Services\WhatsAppCloudApi`, `App\Jobs\SendWhatsAppOrderNotification`
+- Konfigurasi: `config/services.php` dan variabel `WHATSAPP_*` di `.env`
 
 ### Edit CRUD produk admin
 

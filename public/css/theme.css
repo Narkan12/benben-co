@@ -258,6 +258,10 @@ html[data-theme="dark"] .bb-cat-icon {
   background: var(--bb-theme-surface-secondary);
 }
 
+html[data-theme="dark"] .profile-review-empty p {
+  color: var(--bb-theme-muted);
+}
+
 html[data-theme="dark"] .bb-panel-title,
 html[data-theme="dark"] .bb-stat-card .val,
 html[data-theme="dark"] .bb-price,
@@ -381,6 +385,15 @@ html[data-theme="dark"] .profile-story-stamp {
 html[data-theme="dark"] .profile-final-cta {
   color: #F2F2F2;
   background: #1E1E1E;
+}
+
+html[data-theme="dark"] .profile-final-cta .profile-eyebrow,
+html[data-theme="dark"] .profile-final-cta h2 em {
+  color: #F2F2F2;
+}
+
+html[data-theme="dark"] .profile-final-cta .profile-eyebrow > span {
+  background: #F2F2F2;
 }
 
 html[data-theme="dark"] .profile-hero .btn-bb-outline {

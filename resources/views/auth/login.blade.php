@@ -98,6 +98,16 @@
                 button.querySelector('span').textContent = 'Memeriksa akun...';
             }
         });
+        document.querySelectorAll('[data-password-toggle]').forEach(function (toggle) {
+            toggle.addEventListener('click', function () {
+                const input = document.getElementById(toggle.dataset.target);
+                const icon = toggle.querySelector('i');
+                const visible = input.type === 'text';
+                input.type = visible ? 'password' : 'text';
+                icon.className = visible ? 'bi bi-eye' : 'bi bi-eye-slash';
+                toggle.setAttribute('aria-label', visible ? 'Tampilkan password' : 'Sembunyikan password');
+            });
+        });
     </script>
 </body>
 </html>

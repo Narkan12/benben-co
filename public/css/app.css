@@ -2102,6 +2102,17 @@ h1, h2, h3, h4, .font-display{
 .bb-customer-login .bb-staff-login-main { background: #F7F2EA; }
 .bb-customer-login .bb-staff-login-submit { border-color: #76513B; background: #76513B; }
 
+.bb-staff-login:not(.bb-customer-login) .bb-staff-login-card { max-width: 460px; }
+.bb-staff-login:not(.bb-customer-login) .bb-staff-login-back { font-size: .78rem; }
+.bb-staff-login:not(.bb-customer-login) .bb-staff-login-heading > .bb-staff-login-eyebrow { font-size: .71rem; }
+.bb-staff-login:not(.bb-customer-login) .bb-staff-login-heading h2 { font-size: clamp(2.3rem, 3.6vw, 3.3rem); }
+.bb-staff-login:not(.bb-customer-login) .bb-staff-login-heading > p { font-size: .87rem; }
+.bb-staff-login:not(.bb-customer-login) .bb-staff-login-field label { font-size: .78rem; }
+.bb-staff-login:not(.bb-customer-login) .bb-staff-login-input-wrap input { height: 54px; font-size: .83rem; }
+.bb-staff-login:not(.bb-customer-login) .bb-staff-login-submit,
+.bb-staff-login:not(.bb-customer-login) .bb-google-button { min-height: 54px; font-size: .83rem; }
+.bb-staff-login:not(.bb-customer-login) .bb-staff-login-note { font-size: .72rem; }
+
 html[data-theme="dark"] .bb-staff-login-main,
 html[data-theme="dark"] .bb-customer-login .bb-staff-login-main,
 html[data-theme="dark"] .bb-staff-login-card { background: #1E1815; color: #F7F2EA; }
@@ -2161,3 +2172,57 @@ html[data-theme="dark"] .bb-logout-modal-icon { color: #E8DCCB; background: #352
 html[data-theme="dark"] .bb-logout-modal .btn-light { border-color: #51463D; color: #F7F2EA; background: #35251F; }
 @keyframes bbLogoutModalIn { from { opacity: 0; transform: translateY(8px) scale(.985); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .bb-logout-modal { animation: none; } }
+
+.bb-crud-modal,
+.bb-modal-bb .modal-content.bb-crud-modal {
+  overflow: hidden;
+  border: 1px solid rgba(53,37,31,.14);
+  border-radius: 14px;
+  color: #35251F;
+  background: #FFFFFF;
+  box-shadow: 0 24px 60px rgba(53,37,31,.22);
+  animation: bbLogoutModalIn .18s ease-out;
+}
+.bb-crud-modal .modal-header { align-items: center; padding: 18px 22px; border-color: rgba(53,37,31,.12); }
+.bb-crud-modal .modal-title { color: #35251F; font-family: var(--font-display); font-weight: 600; }
+.bb-crud-modal .modal-body { padding: 24px 22px; color: #493126; }
+.bb-crud-modal .modal-footer { gap: 8px; padding: 14px 22px 18px; border: 0; }
+.bb-modal-bb .modal-content.bb-crud-modal .modal-header { padding: 18px 22px; border-color: rgba(53,37,31,.12); }
+.bb-modal-bb .modal-content.bb-crud-modal .modal-title { color: #35251F; }
+.bb-modal-bb .modal-content.bb-crud-modal .modal-body { padding: 24px 22px; color: #493126; }
+.bb-modal-bb .modal-content.bb-crud-modal .modal-footer { padding: 14px 22px 18px; border: 0; }
+.bb-crud-modal .btn-close { margin-left: auto; }
+.bb-crud-confirm-body { display: flex; align-items: center; gap: 14px; }
+.bb-crud-confirm-body p { flex: 1; }
+.bb-crud-modal-icon {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  place-items: center;
+  border-radius: 50%;
+  color: #76513B;
+  background: #F7F2EA;
+  font-size: 1.15rem;
+}
+.bb-crud-modal .btn-light { min-width: 92px; border: 1px solid rgba(53,37,31,.16); color: #493126; background: #F7F2EA; }
+.btn-bb-delete {
+  min-width: 112px;
+  padding: .375rem .75rem;
+  border: 1px solid #9C3D35;
+  border-radius: .375rem;
+  color: #FFFFFF;
+  background: #9C3D35;
+  font: inherit;
+  font-weight: 600;
+}
+.btn-bb-delete:hover:not(:disabled) { border-color: #7E2D27; background: #7E2D27; }
+.btn-bb-delete:disabled { cursor: not-allowed; opacity: .65; }
+html[data-theme="dark"] .bb-crud-modal { border-color: #51463D; color: #F7F2EA; background: #24201D; }
+html[data-theme="dark"] .bb-crud-modal .modal-header { border-color: #51463D; }
+html[data-theme="dark"] .bb-crud-modal .modal-title,
+html[data-theme="dark"] .bb-crud-modal .modal-body { color: #F7F2EA; }
+html[data-theme="dark"] .bb-crud-modal .btn-close { filter: invert(1) grayscale(100%) brightness(200%); }
+html[data-theme="dark"] .bb-crud-modal-icon { color: #E8DCCB; background: #35251F; }
+html[data-theme="dark"] .bb-crud-modal .btn-light { border-color: #51463D; color: #F7F2EA; background: #35251F; }
+@media (prefers-reduced-motion: reduce) { .bb-crud-modal { animation: none; } }

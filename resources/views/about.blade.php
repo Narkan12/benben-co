@@ -137,7 +137,14 @@
     <section class="section-cream profile-about-contact">
         <div class="container-bb profile-about-contact-inner">
             <div><span class="profile-eyebrow"><span></span> Come say hello</span><h2>Kenali produknya,<br><em>hubungi owner-nya.</em></h2></div>
-            <div><p>Komp. Sinergi Antapani, Jl. Nyaman No.33B, Antapani Tengah, Kec. Antapani, Kota Bandung, Jawa Barat 40291.</p><a href="https://wa.me/628139494009" target="_blank" rel="noopener" class="profile-text-link">WhatsApp +62 813-9494-009 <span aria-hidden="true">↗</span></a><a href="https://www.instagram.com/benbenco.id/" target="_blank" rel="noopener" class="profile-text-link">Instagram @benbenco.id <span aria-hidden="true">↗</span></a><a href="{{ route('contact') }}" class="profile-text-link">Lihat lokasi toko <span aria-hidden="true">↗</span></a></div>
+            <div>
+                <p>Komp. Sinergi Antapani, Jl. Nyaman No.33B, Antapani Tengah, Kec. Antapani, Kota Bandung, Jawa Barat 40291.</p>
+                @if($whatsappAdminNumber)
+                    <a href="https://wa.me/{{ $whatsappAdminNumber }}" target="_blank" rel="noopener" class="profile-text-link">WhatsApp +{{ $whatsappAdminNumber }} <span aria-hidden="true">↗</span></a>
+                @endif
+                <a href="https://www.instagram.com/benbenco.id/" target="_blank" rel="noopener" class="profile-text-link">Instagram @benbenco.id <span aria-hidden="true">↗</span></a>
+                <a href="{{ route('contact') }}" class="profile-text-link">Lihat lokasi toko <span aria-hidden="true">↗</span></a>
+            </div>
         </div>
     </section>
 @endsection

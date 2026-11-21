@@ -16,11 +16,42 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class AdminDashboardFeaturesTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_admin_crud_pages_render_the_shared_delete_and_edit_modals(): void
+    {
+        $admin = $this->createUser();
+        $this->createUser('kasir');
+
+        $pages = [
+            route('admin.products') => 'productModal',
+            route('admin.categories') => 'categoryModal',
+            route('admin.promotions') => 'promoModal',
+        ];
+
+        foreach ($pages as $url => $editModalId) {
+            $this->actingAs($admin)
+                ->get($url)
+                ->assertOk()
+                ->assertSee('crud-delete-confirm-modal', false)
+                ->assertSee($editModalId, false)
+                ->assertSee('bb-crud-modal', false);
+        }
+
+        $this->actingAs($admin)
+            ->get(route('admin.users'))
+            ->assertOk()
+            ->assertSee('crud-delete-confirm-modal', false)
+            ->assertSee('userEditModal', false)
+            ->assertSee(route('admin.users.update', 2), false)
+            ->assertSee('data-bs-target="#crud-delete-confirm-modal"', false)
+            ->assertSee('data-crud-delete', false);
+    }
 
     public function test_home_shows_active_promo_modal_with_code_and_usage_period(): void
     {
@@ -82,6 +113,24 @@ class AdminDashboardFeaturesTest extends TestCase
             ])
             ->assertRedirect(route('admin.settings'))
             ->assertSessionHasErrors('password');
+    }
+
+    public function test_customer_and_admin_login_endpoints_are_rate_limited(): void
+    {
+        foreach ([
+            [route('login.submit'), '192.0.2.10'],
+            [route('admin.login.submit'), '192.0.2.11'],
+        ] as [$url, $ip]) {
+            for ($attempt = 0; $attempt < 5; $attempt++) {
+                $this->withServerVariables(['REMOTE_ADDR' => $ip])
+                    ->post($url, ['username' => 'unknown', 'password' => 'wrong-password'])
+                    ->assertRedirect();
+            }
+
+            $this->withServerVariables(['REMOTE_ADDR' => $ip])
+                ->post($url, ['username' => 'unknown', 'password' => 'wrong-password'])
+                ->assertTooManyRequests();
+        }
     }
 
     public function test_cashier_can_update_only_their_own_profile(): void
@@ -830,6 +879,44 @@ class AdminDashboardFeaturesTest extends TestCase
             ->assertDontSee('ENDED10');
     }
 
+    public function test_promotion_codes_are_normalized_before_unique_validation(): void
+    {
+        $admin = $this->createUser();
+        $promotion = Promotion::query()->create([
+            'nama_promo' => 'Promo Lama',
+            'kode_promo' => 'KODE10',
+            'jenis_diskon' => 'nominal',
+            'nilai_diskon' => 1000,
+            'tanggal_mulai' => today()->toDateString(),
+            'tanggal_berakhir' => today()->addDays(7)->toDateString(),
+            'status' => 'active',
+        ]);
+        $data = [
+            'nama_promo' => 'Promo Baru',
+            'kode_promo' => 'kode10',
+            'jenis_diskon' => 'nominal',
+            'nilai_diskon' => 1000,
+            'tanggal_mulai' => today()->toDateString(),
+            'tanggal_berakhir' => today()->addDays(7)->toDateString(),
+            'status' => 'active',
+        ];
+
+        $this->actingAs($admin)
+            ->from(route('admin.promotions'))
+            ->post(route('admin.promotions.store'), $data)
+            ->assertRedirect(route('admin.promotions'))
+            ->assertSessionHasErrors('kode_promo');
+
+        $this->assertDatabaseCount('promotions', 1);
+
+        $this->put(route('admin.promotions.update', $promotion->id_promo), [
+            ...$data,
+            'kode_promo' => 'kOdE10',
+        ])->assertRedirect();
+
+        $this->assertSame('KODE10', $promotion->fresh()->kode_promo);
+    }
+
     public function test_checkout_revalidates_promo_and_calculates_discount_from_database_price(): void
     {
         $customer = $this->createCustomerUser();
@@ -846,6 +933,7 @@ class AdminDashboardFeaturesTest extends TestCase
         $this->createPromotion('VALID50', today()->toDateString(), today()->addDay()->toDateString(), 50);
 
         $checkoutData = [
+            'checkout_token' => (string) Str::uuid(),
             'nama' => 'Pelanggan Tes',
             'no_whatsapp' => '081234567890',
             'alamat' => '',

@@ -120,6 +120,16 @@
 
         <div class="d-flex flex-wrap gap-2 mt-4 no-print">
             <button type="button" class="btn-bb btn-bb-primary" onclick="window.print()"><i class="bi bi-printer me-2"></i>Cetak Bukti Pemesanan</button>
+            @if($whatsappUrl)
+                <a href="{{ $whatsappUrl }}" class="btn-bb btn-bb-outline" target="_blank" rel="noopener noreferrer">
+                    <i class="bi bi-whatsapp me-2" aria-hidden="true"></i>Hubungi Admin via WhatsApp
+                </a>
+            @else
+                <p class="section-sub small mb-0 align-self-center" role="status">
+                    WhatsApp admin belum dikonfigurasi.
+                    <a href="mailto:hello@benbenco.id">Hubungi kami via email</a>.
+                </p>
+            @endif
             <a href="{{ route('customer.order.detail', $order->id_order) }}" class="btn-bb btn-bb-outline">Lihat Status Pesanan</a>
         </div>
     </div>

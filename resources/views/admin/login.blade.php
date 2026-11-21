@@ -86,7 +86,6 @@
                 <p class="bb-staff-login-note"><i class="bi bi-shield-lock" aria-hidden="true"></i> Login ini hanya untuk admin dan staf BENBEN CO.</p>
             </div>
 
-            <footer class="bb-staff-login-footer">&copy; {{ date('Y') }} BENBEN CO. Bakery <span>·</span> Antapani, Bandung</footer>
         </section>
     </main>
     <script>

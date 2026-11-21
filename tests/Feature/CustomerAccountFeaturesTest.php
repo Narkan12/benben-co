@@ -448,8 +448,46 @@ class CustomerAccountFeaturesTest extends TestCase
         ]);
     }
 
+    public function test_profile_validation_does_not_create_orphan_customer_and_repairs_missing_link(): void
+    {
+        $user = User::query()->create([
+            'nama' => 'Profil Belum Terhubung',
+            'username' => 'profil-belum-terhubung',
+            'email' => 'profil-belum-terhubung@example.com',
+            'password' => 'password123',
+            'role' => 'customer',
+        ]);
+
+        $this->actingAs($user)
+            ->from(route('customer.profile'))
+            ->patch(route('customer.profile.update'), [
+                'nama' => '',
+                'email' => 'email-tidak-valid',
+                'no_whatsapp' => '',
+            ])
+            ->assertRedirect(route('customer.profile'))
+            ->assertSessionHasErrors(['nama', 'email', 'no_whatsapp']);
+
+        $this->assertDatabaseCount('customers', 0);
+
+        $this->patch(route('customer.profile.update'), [
+            'nama' => 'Profil Terhubung',
+            'email' => 'profil-terhubung@example.com',
+            'no_whatsapp' => '08123456789',
+            'alamat' => 'Jl. Contoh',
+        ])->assertRedirect(route('customer.profile'));
+
+        $this->assertNotNull($user->fresh()->customer_id);
+        $this->assertDatabaseHas('customers', [
+            'id_customer' => $user->fresh()->customer_id,
+            'nama' => 'Profil Terhubung',
+        ]);
+    }
+
     public function test_admin_pos_receipt_uses_saved_transaction_data(): void
     {
+        config(['services.whatsapp.admin_number' => '+62 813-9494-009']);
+
         $admin = User::query()->create([
             'nama' => 'Admin Uji',
             'username' => 'admin-pos',
@@ -515,6 +553,7 @@ class CustomerAccountFeaturesTest extends TestCase
             ->assertSeeText($createdOrder->kode_order)
             ->assertSeeText($product->nama)
             ->assertSeeText('Tunai')
+            ->assertSeeText('Telp: +628139494009')
             ->assertSee('data-print-receipt', false)
             ->assertSee('receipt-paper-width', false)
             ->assertSee('js/receipt.js', false);

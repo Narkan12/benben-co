@@ -1552,7 +1552,7 @@ XML);
             'harga' => ['required', 'numeric', 'regex:/^\d+$/', 'min:0'],
             'stok' => ['required', 'integer', 'min:0'],
             'status' => ['required', 'in:active,inactive'],
-            'gambar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp'],
+            'gambar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ]);
 
         if ($request->hasFile('gambar')) {
@@ -1568,6 +1568,7 @@ XML);
     public function updateProduct(Request $request, int $productId)
     {
         $product = Product::query()->findOrFail($productId);
+        $oldImagePath = $product->gambar;
         $this->normalizeProductPrice($request);
         $data = $request->validate([
             'nama' => ['required', 'string', 'max:150', Rule::unique('products', 'nama')->ignore($product->id_product, 'id_product')],
@@ -1576,17 +1577,21 @@ XML);
             'harga' => ['required', 'numeric', 'regex:/^\d+$/', 'min:0'],
             'stok' => ['required', 'integer', 'min:0'],
             'status' => ['required', 'in:active,inactive'],
-            'gambar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp'],
+            'gambar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ]);
 
         if ($request->hasFile('gambar')) {
-            if ($product->gambar && ! str_starts_with($product->gambar, 'images/')) {
-                Storage::disk('public')->delete($product->gambar);
-            }
             $data['gambar'] = $request->file('gambar')->store('products', 'public');
         }
 
         $product->update($data);
+        if (
+            $request->hasFile('gambar')
+            && $oldImagePath
+            && ! str_starts_with($oldImagePath, 'images/')
+        ) {
+            Storage::disk('public')->delete($oldImagePath);
+        }
         $this->logActivity('product_updated', 'Admin memperbarui produk '.$product->nama, 'product', $product->id_product, ['category_id' => $product->category_id]);
 
         return back()->with('success', 'Produk berhasil diperbarui.');
@@ -1704,6 +1709,9 @@ XML);
 
     public function savePromotion(Request $request)
     {
+        $request->merge([
+            'kode_promo' => strtoupper(trim((string) $request->input('kode_promo'))),
+        ]);
         $data = $request->validate([
             'nama_promo' => ['required', 'string', 'max:100'],
             'kode_promo' => ['required', 'string', 'max:50', 'alpha_dash', 'unique:promotions,kode_promo'],
@@ -1713,7 +1721,6 @@ XML);
             'tanggal_berakhir' => ['required', 'date_format:Y-m-d', 'after_or_equal:tanggal_mulai'],
             'status' => ['required', 'in:active,inactive'],
         ]);
-        $data['kode_promo'] = strtoupper($data['kode_promo']);
         if ($data['jenis_diskon'] === 'persen' && $data['nilai_diskon'] > 100) {
             return back()->withErrors(['nilai_diskon' => 'Diskon persentase tidak boleh lebih dari 100%.'])->withInput();
         }
@@ -1726,6 +1733,9 @@ XML);
     public function updatePromotion(Request $request, int $promotionId)
     {
         $promotion = Promotion::query()->findOrFail($promotionId);
+        $request->merge([
+            'kode_promo' => strtoupper(trim((string) $request->input('kode_promo'))),
+        ]);
         $data = $request->validate([
             'nama_promo' => ['required', 'string', 'max:100'],
             'kode_promo' => ['required', 'string', 'max:50', 'alpha_dash', Rule::unique('promotions', 'kode_promo')->ignore($promotion->id_promo, 'id_promo')],
@@ -1738,7 +1748,6 @@ XML);
         if ($data['jenis_diskon'] === 'persen' && $data['nilai_diskon'] > 100) {
             return back()->withErrors(['nilai_diskon' => 'Diskon persentase tidak boleh lebih dari 100%.'])->withInput();
         }
-        $data['kode_promo'] = strtoupper($data['kode_promo']);
         $promotion->update($data);
         $this->logActivity('promo_updated', 'Admin memperbarui promo '.$promotion->nama_promo, 'promotion', $promotion->id_promo, ['kode' => $promotion->kode_promo]);
 

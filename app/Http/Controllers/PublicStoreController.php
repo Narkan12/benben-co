@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\CompanyProfileImage;
+use App\Models\Order;
 use App\Models\PageContent;
 use App\Models\Product;
 use App\Models\Promotion;
 use App\Models\Rating;
+use App\Services\WhatsAppCloudApi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -255,32 +257,15 @@ class PublicStoreController extends Controller
         return view('checkout', ['items' => $items]);
     }
 
-    public function success(string $code = null)
+    public function success(WhatsAppCloudApi $whatsApp, ?string $code = null)
     {
         $order = $code
-            ? \App\Models\Order::query()->with(['customer', 'details.product'])
+            ? Order::query()->with(['customer', 'details.product'])
                 ->where('customer_id', auth()->user()->customer_id)
                 ->where('kode_order', $code)
                 ->first()
             : null;
-        $whatsappUrl = null;
-
-        if ($order) {
-            $lines = $order->details->map(function ($detail) {
-                return '- '.$detail->product->nama.' x '.$detail->qty.' = Rp'.number_format($detail->subtotal, 0, ',', '.');
-            })->implode("\n");
-
-            $message = "Halo BENBEN CO. Bakery 👋\n\n"
-                ."Saya ingin melakukan pemesanan.\n\n"
-                ."Daftar produk:\n".$lines."\n\n"
-                ."Total: Rp".number_format($order->total, 0, ',', '.')."\n"
-                ."Nama: ".$order->customer->nama."\n"
-                ."Alamat: ".($order->customer->alamat ?: 'Ambil di toko')."\n"
-                ."Catatan: ".($order->catatan ?: '-')."\n"
-                ."Kode Pesanan: ".$order->kode_order;
-
-            $whatsappUrl = 'https://wa.me/628139494009?text='.rawurlencode($message);
-        }
+        $whatsappUrl = $order ? $whatsApp->customerConfirmationUrl($order) : null;
 
         return view('success', compact('order', 'whatsappUrl'));
     }

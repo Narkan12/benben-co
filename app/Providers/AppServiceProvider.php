@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Services\WhatsAppCloudApi;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +21,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        View::composer(['components.footer', 'home', 'about', 'contact', 'pos.receipt'], function ($view) {
+            $view->with(
+                'whatsappAdminNumber',
+                app(WhatsAppCloudApi::class)->adminNumber()
+            );
+        });
     }
 }

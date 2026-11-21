@@ -56,11 +56,12 @@
                                         data-status="{{ $product->status }}" data-description="{{ $product->deskripsi }}">
                                         <i class="bi bi-pencil"></i>
                                     </button>
-                                    <form method="POST" action="{{ route('admin.products.delete', $product->id_product) }}" onsubmit="return confirm('Yakin ingin menghapus produk ini?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" title="Hapus"><i class="bi bi-trash3"></i></button>
-                                    </form>
+                                    <button type="button" title="Hapus" aria-label="Hapus {{ $product->nama }}"
+                                        data-bs-toggle="modal" data-bs-target="#crud-delete-confirm-modal"
+                                        data-crud-delete data-delete-action="{{ route('admin.products.delete', $product->id_product) }}"
+                                        data-delete-name="{{ $product->nama }}">
+                                        <i class="bi bi-trash3"></i>
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -78,8 +79,8 @@
 
     {{-- ADD/EDIT PRODUCT MODAL --}}
     <div class="modal fade bb-modal-bb" id="productModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content bb-crud-modal">
                 <div class="modal-header">
                     <h5 class="modal-title">Tambah Produk</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -138,5 +139,7 @@
             </div>
         </div>
     </div>
+
+    <x-crud-delete-modal />
 
 @endsection

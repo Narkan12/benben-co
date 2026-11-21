@@ -256,6 +256,38 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
+  const userEditForm = document.querySelector('[data-user-edit-form]');
+  document.querySelectorAll('[data-edit-user]').forEach((btn) => {
+    btn.addEventListener('click', function () {
+      if (!userEditForm) return;
+      userEditForm.action = this.dataset.action;
+      userEditForm.querySelector('[data-user-edit-submit]').disabled = false;
+      userEditForm.querySelector('[data-user-edit-method]').value = 'PUT';
+      userEditForm.querySelector('[name="nama"]').value = this.dataset.name || '';
+      userEditForm.querySelector('[name="username"]').value = this.dataset.username || '';
+      userEditForm.querySelector('[name="email"]').value = this.dataset.email || '';
+      userEditForm.querySelector('[name="role"]').value = this.dataset.role || 'kasir';
+      userEditForm.querySelector('[name="password"]').value = '';
+      userEditForm.querySelector('[name="password_confirmation"]').value = '';
+    });
+  });
+
+  const deleteModal = document.getElementById('crud-delete-confirm-modal');
+  const deleteForm = deleteModal?.querySelector('[data-crud-delete-form]');
+  const deleteSubmit = deleteForm?.querySelector('button[type="submit"]');
+  document.querySelectorAll('[data-crud-delete]').forEach((btn) => {
+    btn.addEventListener('click', function () {
+      if (!deleteModal || !deleteForm || !deleteSubmit || !this.dataset.deleteAction) {
+        console.error('Modal konfirmasi hapus tidak dapat disiapkan.');
+        return;
+      }
+
+      deleteForm.action = this.dataset.deleteAction;
+      deleteModal.querySelector('[data-crud-delete-name]').textContent = this.dataset.deleteName || 'data ini';
+      deleteSubmit.disabled = false;
+    });
+  });
+
   const notificationPanel = document.querySelector('[data-order-notifications]');
   if (notificationPanel) {
     const count = notificationPanel.querySelector('[data-pending-order-count]');

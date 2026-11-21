@@ -15,6 +15,7 @@
         <div class="container-bb">
             <form class="row g-4" method="POST" action="{{ route('checkout.store') }}" enctype="multipart/form-data">
                 @csrf
+                <input type="hidden" name="checkout_token" value="{{ old('checkout_token', $checkoutToken) }}">
                 <div class="col-lg-8">
                     <div class="bb-panel mb-4">
                         <h5 class="bb-panel-title"><i class="bi bi-person me-2"></i>Informasi Pelanggan</h5>

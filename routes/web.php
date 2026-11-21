@@ -39,7 +39,7 @@ Route::middleware([CustomerOnly::class, 'prevent-back-cache'])->group(function (
 });
 
 Route::get('/login', [AuthController::class, 'showCustomerLogin'])->name('login');
-Route::post('/login', [AuthController::class, 'customerLogin'])->name('login.submit');
+Route::post('/login', [AuthController::class, 'customerLogin'])->middleware('throttle:5,1')->name('login.submit');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/register', fn () => view('auth.register'))->name('register');
 Route::post('/register', [AuthController::class, 'register'])->name('register.submit');
@@ -64,7 +64,7 @@ Route::prefix('customer')->name('customer.')->middleware([CustomerOnly::class, '
 
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-    Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1')->name('login.submit');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     Route::middleware([AdminOnly::class, 'prevent-back-cache'])->group(function () {

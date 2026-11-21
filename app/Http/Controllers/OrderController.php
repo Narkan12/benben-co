@@ -8,6 +8,7 @@ use App\Models\OrderStatusHistory;
 use App\Models\Product;
 use App\Models\Rating;
 use App\Models\UserSession;
+use App\Services\WhatsAppCloudApi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -33,13 +34,14 @@ class OrderController extends Controller
         return view('customer.order-detail', ['order' => $order]);
     }
 
-    public function proof(int $id)
+    public function proof(int $id, WhatsAppCloudApi $whatsApp)
     {
         $order = Order::query()->with(['customer', 'details.product', 'statusHistories.user'])
             ->where('customer_id', auth()->user()->customer_id)
             ->findOrFail($id);
+        $whatsappUrl = $whatsApp->customerConfirmationUrl($order);
 
-        return view('customer.order-proof', ['order' => $order]);
+        return view('customer.order-proof', compact('order', 'whatsappUrl'));
     }
 
     public function submitPaymentProof(Request $request, int $id)
@@ -160,12 +162,6 @@ class OrderController extends Controller
     public function updateProfile(Request $request)
     {
         $user = auth()->user();
-        $customer = $user->customer ?? Customer::query()->create([
-            'nama' => $user->nama,
-            'no_whatsapp' => '',
-            'alamat' => null,
-        ]);
-
         $data = $request->validate([
             'nama' => ['required', 'string', 'max:100'],
             'email' => ['required', 'email:rfc', 'max:150', Rule::unique('users', 'email')->ignore($user->id_user)],
@@ -173,7 +169,17 @@ class OrderController extends Controller
             'alamat' => ['nullable', 'string', 'max:500'],
         ]);
 
-        DB::transaction(function () use ($user, $customer, $data) {
+        DB::transaction(function () use ($user, $data) {
+            $customer = $user->customer;
+            if (! $customer) {
+                $customer = Customer::query()->create([
+                    'nama' => $data['nama'],
+                    'no_whatsapp' => $data['no_whatsapp'],
+                    'alamat' => $data['alamat'] ?? null,
+                ]);
+                $user->customer()->associate($customer);
+            }
+
             $user->update([
                 'nama' => $data['nama'],
                 'email' => $data['email'],

@@ -690,10 +690,93 @@
   color:#493126;
   background:#e8dccb;
 }
-.bb-customer-shell .bb-customer-empty-state{
-  min-height:210px;
-  padding:30px 18px;
+.bb-customer-shell .bb-customer-account-meta{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px 14px;
+  margin-top:7px;
+  color:var(--bb-theme-muted);
+  font-size:.72rem;
 }
+.bb-customer-shell .bb-customer-account-meta>span{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  min-width:0;
+  overflow-wrap:anywhere;
+}
+.bb-customer-shell .bb-customer-mini-stat{
+  display:flex;
+  min-height:76px;
+  flex-direction:column;
+  justify-content:center;
+  gap:5px;
+  padding:11px 13px;
+  border:1px solid var(--bb-theme-border);
+  border-radius:10px;
+  color:var(--bb-theme-text);
+  background:var(--bb-theme-surface-secondary);
+  text-decoration:none;
+}
+.bb-customer-shell .bb-customer-mini-stat>span:first-child{
+  color:var(--bb-theme-muted);
+  font-size:.68rem;
+}
+.bb-customer-shell .bb-customer-mini-stat>strong{
+  overflow-wrap:anywhere;
+  font-size:.79rem;
+}
+.bb-customer-shell .bb-customer-mini-stat-link:hover{
+  border-color:var(--bb-theme-accent);
+  color:var(--bb-theme-text);
+  background:var(--bb-theme-hover);
+}
+.bb-customer-shell .bb-customer-quick-panel{
+  display:flex;
+  flex-direction:column;
+  gap:9px;
+}
+.bb-customer-shell .bb-customer-quick-panel>a{
+  display:flex;
+  min-height:38px;
+  align-items:center;
+  gap:10px;
+  padding:8px 10px;
+  border:1px solid var(--bb-theme-border);
+  border-radius:8px;
+  color:var(--bb-theme-text);
+  background:var(--bb-theme-surface-secondary);
+  font-size:.74rem;
+  line-height:1.4;
+  text-decoration:none;
+  transition:background .18s ease,border-color .18s ease;
+}
+.bb-customer-shell .bb-customer-quick-panel>a:hover{
+  border-color:var(--bb-theme-accent);
+  background:var(--bb-theme-hover);
+}
+.bb-customer-shell .bb-customer-quick-panel>a>i:first-child{
+  flex:0 0 16px;
+  color:var(--bb-theme-accent);
+  text-align:center;
+}
+.bb-customer-shell .bb-customer-quick-panel>a>span{
+  min-width:0;
+  overflow-wrap:anywhere;
+}
+.bb-customer-shell .bb-customer-empty-state{
+  display:flex;
+  min-height:210px;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  padding:30px 18px;
+  text-align:center;
+}
+.bb-customer-shell .bb-customer-empty-state>strong{font-size:.84rem;}
+.bb-customer-shell .bb-customer-empty-state>span{color:var(--bb-theme-muted);font-size:.74rem;}
+.bb-customer-shell .bb-customer-empty-state>.btn-bb{margin-top:4px;}
 .bb-customer-shell .bb-customer-empty-state>i{color:#b98a60;}
 .bb-admin-shell .bb-upload-drop{
   border-color:#d6c3ad;

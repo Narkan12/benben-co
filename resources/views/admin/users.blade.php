@@ -74,6 +74,13 @@
                             <td>{{ $user->is_active ? 'Aktif' : 'Nonaktif' }}</td>
                             <td>{{ $user->created_at?->format('d M Y') ?? '-' }}</td>
                             <td class="d-flex flex-wrap gap-2">
+                                <button type="button" class="btn-bb btn-bb-outline btn-bb-sm"
+                                    data-bs-toggle="modal" data-bs-target="#userEditModal" data-edit-user
+                                    data-action="{{ route('admin.users.update', $user->id_user) }}"
+                                    data-name="{{ $user->nama }}" data-username="{{ $user->username }}"
+                                    data-email="{{ $user->email ?? '' }}" data-role="{{ $user->role }}">
+                                    Edit
+                                </button>
                                 <form method="POST" action="{{ route('admin.users.toggle-status', $user->id_user) }}">
                                     @csrf
                                     @method('PATCH')
@@ -81,13 +88,13 @@
                                         {{ $user->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
                                     </button>
                                 </form>
-                                <form method="POST" action="{{ route('admin.users.destroy', $user->id_user) }}">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn-bb btn-bb-outline btn-bb-sm" onclick="return confirm('Hapus akun ini?')" {{ auth()->id() === $user->id_user ? 'disabled' : '' }}>
-                                        Hapus
-                                    </button>
-                                </form>
+                                <button type="button" class="btn-bb btn-bb-outline btn-bb-sm"
+                                    data-bs-toggle="modal" data-bs-target="#crud-delete-confirm-modal"
+                                    data-crud-delete data-delete-action="{{ route('admin.users.destroy', $user->id_user) }}"
+                                    data-delete-name="{{ $user->nama }}"
+                                    {{ auth()->id() === $user->id_user ? 'disabled' : '' }}>
+                                    Hapus
+                                </button>
                             </td>
                         </tr>
                     @empty
@@ -101,4 +108,54 @@
             {{ $users->links() }}
         </div>
     </div>
+
+    <div class="modal fade" id="userEditModal" tabindex="-1" aria-labelledby="userEditModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bb-crud-modal">
+                <div class="modal-header">
+                    <h2 class="modal-title fs-5" id="userEditModalTitle">Edit Pengguna</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Batal"></button>
+                </div>
+                <form method="POST" action="#" data-user-edit-form>
+                    @csrf
+                    <input type="hidden" name="_method" value="PUT" data-user-edit-method>
+                    <div class="modal-body">
+                        <div class="bb-input-group">
+                            <label for="edit-user-name" class="bb-form-label">Nama</label>
+                            <input id="edit-user-name" type="text" name="nama" class="bb-input" required maxlength="100">
+                        </div>
+                        <div class="bb-input-group">
+                            <label for="edit-user-username" class="bb-form-label">Username</label>
+                            <input id="edit-user-username" type="text" name="username" class="bb-input" required maxlength="50">
+                        </div>
+                        <div class="bb-input-group">
+                            <label for="edit-user-email" class="bb-form-label">Email</label>
+                            <input id="edit-user-email" type="email" name="email" class="bb-input" maxlength="150">
+                        </div>
+                        <div class="bb-input-group">
+                            <label for="edit-user-role" class="bb-form-label">Role</label>
+                            <select id="edit-user-role" name="role" class="bb-input" required>
+                                <option value="admin">Admin</option>
+                                <option value="kasir">Kasir</option>
+                            </select>
+                        </div>
+                        <div class="bb-input-group">
+                            <label for="edit-user-password" class="bb-form-label">Password baru (opsional)</label>
+                            <input id="edit-user-password" type="password" name="password" class="bb-input" minlength="8" autocomplete="new-password">
+                        </div>
+                        <div class="bb-input-group">
+                            <label for="edit-user-password-confirmation" class="bb-form-label">Konfirmasi password baru</label>
+                            <input id="edit-user-password-confirmation" type="password" name="password_confirmation" class="bb-input" minlength="8" autocomplete="new-password">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-bb btn-bb-outline" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn-bb btn-bb-primary" data-user-edit-submit disabled>Simpan Perubahan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <x-crud-delete-modal />
 @endsection

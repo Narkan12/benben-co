@@ -9,6 +9,22 @@ document.addEventListener('DOMContentLoaded', function () {
     window.bootstrap.Modal.getOrCreateInstance(promoModal).show();
   }
 
+  const whatsappContactForm = document.querySelector('[data-whatsapp-contact-form]');
+  whatsappContactForm?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const formData = new FormData(whatsappContactForm);
+    const message = [
+      'Halo BENBEN CO., saya ingin bertanya.',
+      '',
+      `Nama: ${formData.get('name')}`,
+      `Email: ${formData.get('email')}`,
+      `Subjek: ${formData.get('subject')}`,
+      `Pesan: ${formData.get('message')}`,
+    ].join('\n');
+    const whatsappUrl = `${whatsappContactForm.action}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+  });
+
   document.addEventListener('click', async function (event) {
     const button = event.target.closest('[data-copy-promo]');
     if (!button) return;

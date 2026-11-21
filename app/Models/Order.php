@@ -35,6 +35,8 @@ class Order extends Model
         'promo_id',
         'kode_promo_used',
         'admin_viewed_at',
+        'checkout_token',
+        'whatsapp_notified_at',
     ];
 
     protected $casts = [
@@ -42,6 +44,7 @@ class Order extends Model
         'cash_received' => 'float',
         'cash_change' => 'float',
         'admin_viewed_at' => 'datetime',
+        'whatsapp_notified_at' => 'datetime',
     ];
 
     public function customer()

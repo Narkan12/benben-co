@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\SendWhatsAppOrderNotification;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\OrderDetail;
@@ -9,11 +10,15 @@ use App\Models\OrderStatusHistory;
 use App\Models\Product;
 use App\Models\Promotion;
 use App\Models\StockLog;
+use App\Services\WhatsAppCloudApi;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class CheckoutController extends Controller
 {
@@ -55,6 +60,7 @@ class CheckoutController extends Controller
             'subtotal' => $subtotal,
             'delivery' => 15000,
             'customer' => auth()->user()?->customer,
+            'checkoutToken' => (string) Str::uuid(),
         ]);
     }
 
@@ -122,9 +128,27 @@ class CheckoutController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(Request $request, WhatsAppCloudApi $whatsApp)
     {
+        $checkoutToken = $request->validate([
+            'checkout_token' => ['required', 'uuid'],
+        ])['checkout_token'];
+
+        $existingOrder = Order::query()
+            ->where('customer_id', auth()->user()->customer_id)
+            ->where('checkout_token', $checkoutToken)
+            ->first();
+
+        if ($existingOrder) {
+            session()->forget('cart');
+            $this->queueWhatsAppNotification($existingOrder, $whatsApp);
+
+            return redirect()->route('customer.order.proof', ['id' => $existingOrder->id_order])
+                ->with('success', 'Pesanan berhasil dibuat.');
+        }
+
         $request->validate([
+            'checkout_token' => ['required', 'uuid'],
             'nama' => ['required', 'string', 'max:100'],
             'no_whatsapp' => ['required', 'string', 'max:20'],
             'alamat' => [Rule::requiredIf($request->input('delivery_method') === 'delivery'), 'nullable', 'string'],
@@ -152,147 +176,173 @@ class CheckoutController extends Controller
             ? $request->file('payment_proof')->store('payment-proofs', 'public')
             : null;
 
-        $order = DB::transaction(function () use ($request, $cart, $promoCode, $proofPath) {
-            $promo = null;
-            if ($promoCode !== '') {
-                $promo = Promotion::query()
-                    ->where('kode_promo', $promoCode)
-                    ->where('status', 'active')
-                    ->whereDate('tanggal_mulai', '<=', today())
-                    ->whereDate('tanggal_berakhir', '>=', today())
+        try {
+            $order = DB::transaction(function () use ($request, $cart, $promoCode, $proofPath, $checkoutToken) {
+                $promo = null;
+                if ($promoCode !== '') {
+                    $promo = Promotion::query()
+                        ->where('kode_promo', $promoCode)
+                        ->where('status', 'active')
+                        ->whereDate('tanggal_mulai', '<=', today())
+                        ->whereDate('tanggal_berakhir', '>=', today())
+                        ->lockForUpdate()
+                        ->first();
+
+                    if (! $promo) {
+                        throw ValidationException::withMessages([
+                            'promo_code' => 'Kode promo tidak valid atau sudah di luar masa berlaku.',
+                        ]);
+                    }
+                }
+
+                $products = Product::query()
+                    ->whereIn('id_product', array_keys($cart))
+                    ->orderBy('id_product')
                     ->lockForUpdate()
-                    ->first();
+                    ->get()
+                    ->keyBy('id_product');
+                $items = [];
+                $subtotal = 0;
 
-                if (! $promo) {
-                    throw ValidationException::withMessages([
-                        'promo_code' => 'Kode promo tidak valid atau sudah di luar masa berlaku.',
-                    ]);
-                }
-            }
+                foreach ($cart as $productId => $row) {
+                    $product = $products->get($productId);
+                    $qty = (int) ($row['qty'] ?? 1);
 
-            $products = Product::query()
-                ->whereIn('id_product', array_keys($cart))
-                ->orderBy('id_product')
-                ->lockForUpdate()
-                ->get()
-                ->keyBy('id_product');
-            $items = [];
-            $subtotal = 0;
+                    if (! $product || $product->status !== 'active') {
+                        throw ValidationException::withMessages([
+                            'cart' => 'Salah satu produk di keranjang sudah tidak tersedia. Silakan periksa kembali keranjang Anda.',
+                        ]);
+                    }
 
-            foreach ($cart as $productId => $row) {
-                $product = $products->get($productId);
-                $qty = (int) ($row['qty'] ?? 1);
+                    if ($qty < 1 || $qty > $product->stok) {
+                        throw ValidationException::withMessages([
+                            'cart' => 'Stok produk '.$product->nama.' tidak cukup.',
+                        ]);
+                    }
 
-                if (! $product || $product->status !== 'active') {
-                    throw ValidationException::withMessages([
-                        'cart' => 'Salah satu produk di keranjang sudah tidak tersedia. Silakan periksa kembali keranjang Anda.',
-                    ]);
-                }
-
-                if ($qty < 1 || $qty > $product->stok) {
-                    throw ValidationException::withMessages([
-                        'cart' => 'Stok produk '.$product->nama.' tidak cukup.',
-                    ]);
+                    $lineTotal = (float) $product->harga * $qty;
+                    $subtotal += $lineTotal;
+                    $items[] = [
+                        'product' => $product,
+                        'qty' => $qty,
+                        'subtotal' => $lineTotal,
+                    ];
                 }
 
-                $lineTotal = (float) $product->harga * $qty;
-                $subtotal += $lineTotal;
-                $items[] = [
-                    'product' => $product,
-                    'qty' => $qty,
-                    'subtotal' => $lineTotal,
-                ];
-            }
+                if ($items === []) {
+                    throw ValidationException::withMessages([
+                        'cart' => 'Tidak ada produk yang tersedia untuk dipesan.',
+                    ]);
+                }
 
-            if ($items === []) {
-                throw ValidationException::withMessages([
-                    'cart' => 'Tidak ada produk yang tersedia untuk dipesan.',
+                $discount = 0;
+                if ($promo) {
+                    $discount = $promo->jenis_diskon === 'persen'
+                        ? round(($subtotal * $promo->nilai_diskon) / 100, 2)
+                        : (float) $promo->nilai_diskon;
+                    $discount = min($discount, $subtotal);
+                }
+
+                $customer = auth()->check() && auth()->user()->role === 'customer'
+                    ? auth()->user()->customer
+                    : null;
+                if ($customer) {
+                    $customer->update([
+                        'nama' => $request->nama,
+                        'no_whatsapp' => $request->no_whatsapp,
+                        'alamat' => $request->alamat,
+                    ]);
+                } else {
+                    $customer = Customer::query()->create([
+                        'nama' => $request->nama,
+                        'no_whatsapp' => $request->no_whatsapp,
+                        'alamat' => $request->alamat,
+                    ]);
+                }
+
+                $delivery = $request->delivery_method === 'delivery' ? 15000 : 0;
+                $total = max(0, $subtotal - $discount + $delivery);
+
+                $order = Order::query()->create([
+                    'kode_order' => 'BB-'.strtoupper(Str::random(8)),
+                    'checkout_token' => $checkoutToken,
+                    'customer_id' => $customer->id_customer,
+                    'tanggal' => now(),
+                    'subtotal' => $subtotal,
+                    'delivery' => $delivery,
+                    'diskon' => $discount,
+                    'total' => $total,
+                    'status' => 'pending',
+                    'payment_method' => $request->payment_method,
+                    'payment_status' => 'pending',
+                    'payment_proof' => $proofPath,
+                    'delivery_method' => $request->delivery_method,
+                    'catatan' => $request->catatan ?? null,
+                    'source' => 'online',
+                    'promo_id' => $promo?->id_promo,
+                    'kode_promo_used' => $promo?->kode_promo,
                 ]);
-            }
-
-            $discount = 0;
-            if ($promo) {
-                $discount = $promo->jenis_diskon === 'persen'
-                    ? round(($subtotal * $promo->nilai_diskon) / 100, 2)
-                    : (float) $promo->nilai_diskon;
-                $discount = min($discount, $subtotal);
-            }
-
-            $customer = auth()->check() && auth()->user()->role === 'customer'
-                ? auth()->user()->customer
-                : null;
-            if ($customer) {
-                $customer->update([
-                    'nama' => $request->nama,
-                    'no_whatsapp' => $request->no_whatsapp,
-                    'alamat' => $request->alamat,
-                ]);
-            } else {
-                $customer = Customer::query()->create([
-                    'nama' => $request->nama,
-                    'no_whatsapp' => $request->no_whatsapp,
-                    'alamat' => $request->alamat,
-                ]);
-            }
-
-            $delivery = $request->delivery_method === 'delivery' ? 15000 : 0;
-            $total = max(0, $subtotal - $discount + $delivery);
-
-            $order = Order::query()->create([
-                'kode_order' => 'BB-'.strtoupper(Str::random(8)),
-                'customer_id' => $customer->id_customer,
-                'tanggal' => now(),
-                'subtotal' => $subtotal,
-                'delivery' => $delivery,
-                'diskon' => $discount,
-                'total' => $total,
-                'status' => 'pending',
-                'payment_method' => $request->payment_method,
-                'payment_status' => 'pending',
-                'payment_proof' => $proofPath,
-                'delivery_method' => $request->delivery_method,
-                'catatan' => $request->catatan ?? null,
-                'source' => 'online',
-                'promo_id' => $promo?->id_promo,
-                'kode_promo_used' => $promo?->kode_promo,
-            ]);
-            OrderStatusHistory::query()->create([
-                'order_id' => $order->id_order,
-                'from_status' => null,
-                'to_status' => 'pending',
-                'changed_by' => null,
-                'source' => 'checkout',
-            ]);
-
-            foreach ($items as $item) {
-                $product = $item['product'];
-                $stockBefore = (int) $product->stok;
-
-                OrderDetail::query()->create([
+                OrderStatusHistory::query()->create([
                     'order_id' => $order->id_order,
-                    'product_id' => $product->id_product,
-                    'harga' => $product->harga,
-                    'qty' => $item['qty'],
-                    'subtotal' => $item['subtotal'],
+                    'from_status' => null,
+                    'to_status' => 'pending',
+                    'changed_by' => null,
+                    'source' => 'checkout',
                 ]);
 
-                $product->stok = $stockBefore - $item['qty'];
-                $product->save();
+                foreach ($items as $item) {
+                    $product = $item['product'];
+                    $stockBefore = (int) $product->stok;
 
-                StockLog::query()->create([
-                    'product_id' => $product->id_product,
-                    'jenis' => 'out',
-                    'jumlah' => $item['qty'],
-                    'stok_sebelum' => $stockBefore,
-                    'stok_sesudah' => $product->stok,
-                    'keterangan' => 'Order '.$order->kode_order,
-                ]);
+                    OrderDetail::query()->create([
+                        'order_id' => $order->id_order,
+                        'product_id' => $product->id_product,
+                        'harga' => $product->harga,
+                        'qty' => $item['qty'],
+                        'subtotal' => $item['subtotal'],
+                    ]);
+
+                    $product->stok = $stockBefore - $item['qty'];
+                    $product->save();
+
+                    StockLog::query()->create([
+                        'product_id' => $product->id_product,
+                        'jenis' => 'out',
+                        'jumlah' => $item['qty'],
+                        'stok_sebelum' => $stockBefore,
+                        'stok_sesudah' => $product->stok,
+                        'keterangan' => 'Order '.$order->kode_order,
+                    ]);
+                }
+
+                return $order;
+            });
+        } catch (ValidationException $exception) {
+            $order = Order::query()
+                ->where('customer_id', auth()->user()->customer_id)
+                ->where('checkout_token', $checkoutToken)
+                ->first();
+            if (! $order) {
+                throw $exception;
+            }
+        } catch (QueryException $exception) {
+            $isCheckoutTokenCollision = in_array($exception->getCode(), ['23000', '19'], true)
+                && str_contains(strtolower($exception->getMessage()), 'checkout_token');
+            if (! $isCheckoutTokenCollision) {
+                throw $exception;
             }
 
-            return $order;
-        });
+            $order = Order::query()
+                ->where('customer_id', auth()->user()->customer_id)
+                ->where('checkout_token', $checkoutToken)
+                ->first();
+            if (! $order) {
+                throw $exception;
+            }
+        }
 
         session()->forget('cart');
+        $this->queueWhatsAppNotification($order, $whatsApp);
 
         if (auth()->check() && auth()->user()->role === 'customer') {
             return redirect()->route('customer.order.proof', ['id' => $order->id_order])
@@ -301,5 +351,33 @@ class CheckoutController extends Controller
 
         return redirect()->route('checkout.success', ['code' => $order->kode_order])
             ->with('success', 'Pesanan berhasil dibuat.');
+    }
+
+    private function queueWhatsAppNotification(Order $order, WhatsAppCloudApi $whatsApp): void
+    {
+        if ($order->whatsapp_notified_at) {
+            return;
+        }
+
+        $missingConfiguration = $whatsApp->missingNotificationConfiguration();
+        if ($missingConfiguration !== []) {
+            Log::notice('Automatic WhatsApp order notification was not queued because configuration is incomplete.', [
+                'order_id' => $order->id_order,
+                'order_code' => $order->kode_order,
+                'missing_configuration' => $missingConfiguration,
+            ]);
+
+            return;
+        }
+
+        try {
+            SendWhatsAppOrderNotification::dispatch($order->id_order)->afterCommit();
+        } catch (Throwable $exception) {
+            Log::error('WhatsApp order notification could not be queued.', [
+                'order_id' => $order->id_order,
+                'order_code' => $order->kode_order,
+                'exception' => $exception->getMessage(),
+            ]);
+        }
     }
 }
