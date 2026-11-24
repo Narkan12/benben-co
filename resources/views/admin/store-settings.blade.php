@@ -28,15 +28,6 @@
     </div>
 
     <div class="bb-panel bb-store-settings-panel">
-        <div class="bb-store-settings-hero">
-            <span class="bb-store-settings-hero-icon"><i class="bi bi-shop-window"></i></span>
-            <div>
-                <span class="bb-store-settings-eyebrow">OPERASIONAL TOKO</span>
-                <h3>Kelola pembayaran dengan mudah</h3>
-                <p>Tambahkan rekening resmi toko. Pelanggan akan melihat seluruh rekening yang tersimpan saat memilih transfer.</p>
-            </div>
-        </div>
-
         <form method="POST" action="{{ route('admin.settings.payment.update') }}" enctype="multipart/form-data">
             @csrf
             @method('PATCH')

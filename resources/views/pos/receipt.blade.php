@@ -175,6 +175,10 @@
             color: #3a271d;
         }
 
+        .receipt-card * {
+            font-weight: 700;
+        }
+
         .receipt-header {
             margin-bottom: 12px;
             padding: 2px 4px 12px;
@@ -391,7 +395,8 @@
 
             .receipt-card {
                 width: 100% !important;
-                max-height: 176mm !important;
+                height: auto !important;
+                max-height: none !important;
                 margin: 0 !important;
                 padding: var(--receipt-card-padding, 2mm) !important;
                 border: 0 !important;
@@ -399,7 +404,7 @@
                 border-radius: 0 !important;
                 background: #fffdf8 !important;
                 box-shadow: none !important;
-                overflow: hidden !important;
+                overflow: visible !important;
             }
 
             .receipt-header,
