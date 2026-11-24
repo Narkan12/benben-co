@@ -5,7 +5,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!receipt || !widthSelect || !printButton) return;
 
+    const originalTitle = document.title;
+
     const preparePrintLayout = () => {
+        document.title = '';
         const requestedWidth = Number(widthSelect.value);
         const width = requestedWidth === 58 ? 58 : 80;
         const cardPadding = width === 58 ? '2mm' : '3mm';
@@ -14,12 +17,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!card) return;
 
-        measurement.dataset.paperWidth = String(width);
+        measurement.classList.add('print-measurement');
         measurement.style.cssText = `position:fixed;left:-10000px;top:0;visibility:hidden;display:block;width:${width}mm;max-width:${width}mm;margin:0;padding:0;`;
-        card.style.cssText = `box-sizing:border-box;width:100%;padding:${cardPadding};margin:0;border:0;box-shadow:none;`;
+        card.style.cssText = `box-sizing:border-box;width:100%;padding:${cardPadding};margin:0;border:0;border-top:2mm solid #79523e;border-radius:0;box-shadow:none;`;
         document.body.append(measurement);
 
-        const height = Math.ceil(measurement.getBoundingClientRect().height * 25.4 / 96 + 2);
+        const pixelHeight = Math.ceil(measurement.getBoundingClientRect().height);
+        const height = Math.max(40, Math.ceil(pixelHeight * 25.4 / 96 + 4));
         measurement.remove();
 
         receipt.dataset.paperWidth = String(width);
@@ -32,7 +36,14 @@ document.addEventListener('DOMContentLoaded', () => {
             pageStyle.id = 'receipt-page-size';
             document.head.append(pageStyle);
         }
-        pageStyle.textContent = `@page{size:${width}mm ${height}mm;margin:0;}`;
+
+        pageStyle.textContent = `@page { size: ${width}mm ${height}mm; margin: 0; }`;
+        document.documentElement.classList.add('is-printing-receipt');
+    };
+
+    const restoreScreenLayout = () => {
+        document.documentElement.classList.remove('is-printing-receipt');
+        document.title = originalTitle;
     };
 
     printButton.addEventListener('click', async () => {
@@ -46,5 +57,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    widthSelect.addEventListener('change', () => {
+        preparePrintLayout();
+        restoreScreenLayout();
+    });
+
     window.addEventListener('beforeprint', preparePrintLayout);
+    window.addEventListener('afterprint', restoreScreenLayout);
 });

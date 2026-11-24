@@ -41,6 +41,8 @@ return [
 
     'debug' => (bool) env('APP_DEBUG', false),
 
+    'demo_seed_enabled' => (bool) env('BENBEN_DEMO_SEED_ENABLED', false),
+
     /*
     |--------------------------------------------------------------------------
     | Application URL

@@ -6,8 +6,39 @@ document.addEventListener('DOMContentLoaded', () => {
     const totalElement = document.getElementById('pos-total');
     const receivedInput = document.getElementById('pos-received');
     const changeElement = document.getElementById('pos-change');
+    const paymentMethodInput = document.getElementById('pos-payment');
+    const paymentPresets = document.querySelector('[data-pos-payment-presets]');
+    const paymentOptions = document.querySelector('[data-pos-payment-options]');
 
     const formatMoney = (amount) => 'Rp' + new Intl.NumberFormat('id-ID').format(amount);
+
+    function renderPaymentPresets(total) {
+        paymentOptions.replaceChildren();
+        paymentPresets.hidden = paymentMethodInput.value !== 'cash' || total <= 0;
+        if (paymentPresets.hidden) return;
+
+        const amounts = new Set([total]);
+        let amount = Math.ceil(total / 50000) * 50000;
+        while (amounts.size < 5) {
+            amounts.add(amount);
+            amount += 50000;
+        }
+
+        amounts.forEach((value, index) => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'btn-bb btn-bb-outline btn-bb-sm';
+            button.textContent = index === 0
+                ? `Uang Pas · ${formatMoney(value)}`
+                : formatMoney(value);
+            button.setAttribute('aria-label', `Isi pembayaran ${formatMoney(value)}`);
+            button.addEventListener('click', () => {
+                receivedInput.value = new Intl.NumberFormat('id-ID').format(value);
+                receivedInput.dispatchEvent(new Event('input', { bubbles: true }));
+            });
+            paymentOptions.append(button);
+        });
+    }
 
     function renderCart() {
         cartElement.replaceChildren();
@@ -25,6 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
         cart.forEach((item, id) => {
             const lineTotal = item.price * item.qty;
             total += lineTotal;
+            updateProductStock(document.querySelector(`[data-id="${id}"]`), item.stock, item.qty);
 
             const row = document.createElement('div');
             row.className = 'bb-summary-row align-items-center gap-2';
@@ -32,10 +64,24 @@ document.addEventListener('DOMContentLoaded', () => {
             description.textContent = item.name;
             const controls = document.createElement('div');
             controls.className = 'd-flex align-items-center gap-1';
-            controls.innerHTML = `<button type="button" class="btn-bb btn-bb-outline btn-bb-sm" data-pos-minus aria-label="Kurangi ${item.name}">−</button>
-                <input type="text" class="bb-input text-center" style="width:64px;padding:6px;" inputmode="numeric" data-numeric-input value="${item.qty}" data-pos-qty aria-label="Jumlah ${item.name}">
-                <button type="button" class="btn-bb btn-bb-outline btn-bb-sm" data-pos-plus aria-label="Tambah ${item.name}">+</button>`;
-            controls.querySelector('[data-pos-minus]').addEventListener('click', () => {
+            const quantityLabel = document.createElement('label');
+            quantityLabel.className = 'section-sub mb-0';
+            quantityLabel.htmlFor = `pos-qty-${id}`;
+            quantityLabel.textContent = 'Jumlah';
+            const requiredIndicator = document.createElement('span');
+            requiredIndicator.className = 'bb-required-indicator';
+            requiredIndicator.title = 'Wajib diisi';
+            requiredIndicator.setAttribute('aria-hidden', 'true');
+            requiredIndicator.textContent = ' *';
+            quantityLabel.append(requiredIndicator);
+
+            const minusButton = document.createElement('button');
+            minusButton.type = 'button';
+            minusButton.className = 'btn-bb btn-bb-outline btn-bb-sm';
+            minusButton.dataset.posMinus = '';
+            minusButton.setAttribute('aria-label', `Kurangi ${item.name}`);
+            minusButton.textContent = '−';
+            minusButton.addEventListener('click', () => {
                 if (item.qty <= 1) {
                     cart.delete(id);
                     updateProductStock(document.querySelector(`[data-id="${id}"]`), item.stock, 0);
@@ -44,15 +90,36 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 renderCart();
             });
-            controls.querySelector('[data-pos-plus]').addEventListener('click', () => {
-                if (item.qty < item.stock) item.qty += 1;
-                renderCart();
-            });
-            controls.querySelector('[data-pos-qty]').addEventListener('change', (event) => {
+
+            const quantityInput = document.createElement('input');
+            quantityInput.id = `pos-qty-${id}`;
+            quantityInput.type = 'text';
+            quantityInput.className = 'bb-input text-center';
+            quantityInput.style.width = '64px';
+            quantityInput.style.padding = '6px';
+            quantityInput.inputMode = 'numeric';
+            quantityInput.dataset.numericInput = '';
+            quantityInput.dataset.posQty = '';
+            quantityInput.value = item.qty;
+            quantityInput.setAttribute('aria-label', `Jumlah ${item.name}`);
+            quantityInput.required = true;
+            quantityInput.addEventListener('change', (event) => {
                 const requested = Number(event.target.value.replace(/\D/g, ''));
                 item.qty = Math.min(item.stock, Math.max(1, Number.isInteger(requested) ? requested : 1));
                 renderCart();
             });
+
+            const plusButton = document.createElement('button');
+            plusButton.type = 'button';
+            plusButton.className = 'btn-bb btn-bb-outline btn-bb-sm';
+            plusButton.dataset.posPlus = '';
+            plusButton.setAttribute('aria-label', `Tambah ${item.name}`);
+            plusButton.textContent = '+';
+            plusButton.addEventListener('click', () => {
+                if (item.qty < item.stock) item.qty += 1;
+                renderCart();
+            });
+            controls.append(quantityLabel, minusButton, quantityInput, plusButton);
             const price = document.createElement('span');
             price.textContent = formatMoney(lineTotal);
             row.append(description, controls, price);
@@ -70,6 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         totalElement.textContent = formatMoney(total);
         updateChange(total);
+        renderPaymentPresets(total);
     }
 
     function updateChange(total) {
@@ -108,6 +176,10 @@ document.addEventListener('DOMContentLoaded', () => {
     receivedInput.addEventListener('input', () => {
         const total = [...cart.values()].reduce((sum, item) => sum + item.price * item.qty, 0);
         updateChange(total);
+    });
+    paymentMethodInput.addEventListener('change', () => {
+        const total = [...cart.values()].reduce((sum, item) => sum + item.price * item.qty, 0);
+        renderPaymentPresets(total);
     });
 
     renderCart();

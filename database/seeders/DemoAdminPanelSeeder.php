@@ -2,386 +2,373 @@
 
 namespace Database\Seeders;
 
-use App\Models\Category;
+use App\Models\ActivityLog;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\OrderStatusHistory;
 use App\Models\PageContent;
 use App\Models\Product;
-use Carbon\Carbon;
+use App\Models\Promotion;
+use App\Models\Rating;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use RuntimeException;
 
 class DemoAdminPanelSeeder extends Seeder
 {
     private const CUSTOMERS = [
         'nabila' => [
-            'nama' => 'Simulasi - Nabila Putri',
-            'no_whatsapp' => 'SIMULASI-01',
-            'alamat' => 'Alamat simulasi - Jl. Melati, Antapani, Bandung.',
+            'nama' => 'Nabila Putri',
+            'no_whatsapp' => '081234567801',
+            'alamat' => 'Jl. Melati No. 18, Antapani, Bandung',
+            'username' => 'nabila.putri',
+            'email' => 'nabila.putri@example.com',
+            'legacy_phone' => 'SIMULASI-01',
+            'legacy_name' => 'Simulasi - Nabila Putri',
         ],
         'rizky' => [
-            'nama' => 'Simulasi - Rizky Ramadhan',
-            'no_whatsapp' => 'SIMULASI-02',
-            'alamat' => 'Alamat simulasi - Jl. Sukajadi, Sukajadi, Bandung.',
+            'nama' => 'Rizky Ramadhan',
+            'no_whatsapp' => '081234567802',
+            'alamat' => 'Jl. Sukajadi No. 42, Sukajadi, Bandung',
+            'username' => 'rizky.ramadhan',
+            'email' => 'rizky.ramadhan@example.com',
+            'legacy_phone' => 'SIMULASI-02',
+            'legacy_name' => 'Simulasi - Rizky Ramadhan',
         ],
         'siti' => [
-            'nama' => 'Simulasi - Siti Aulia',
-            'no_whatsapp' => 'SIMULASI-03',
-            'alamat' => 'Alamat simulasi - Jl. Cikutra, Cibeunying Kidul, Bandung.',
+            'nama' => 'Siti Aulia',
+            'no_whatsapp' => '081234567803',
+            'alamat' => 'Jl. Cikutra No. 76, Cibeunying Kidul, Bandung',
+            'username' => 'siti.aulia',
+            'email' => 'siti.aulia@example.com',
+            'legacy_phone' => 'SIMULASI-03',
+            'legacy_name' => 'Simulasi - Siti Aulia',
         ],
         'fajar' => [
-            'nama' => 'Simulasi - Fajar Maulana',
-            'no_whatsapp' => 'SIMULASI-04',
-            'alamat' => 'Alamat simulasi - Jl. Buahbatu, Buahbatu, Bandung.',
+            'nama' => 'Fajar Maulana',
+            'no_whatsapp' => '081234567804',
+            'alamat' => 'Jl. Buahbatu No. 25, Buahbatu, Bandung',
+            'username' => 'fajar.maulana',
+            'email' => 'fajar.maulana@example.com',
+            'legacy_phone' => 'SIMULASI-04',
+            'legacy_name' => 'Simulasi - Fajar Maulana',
         ],
         'dinda' => [
-            'nama' => 'Simulasi - Dinda Maharani',
-            'no_whatsapp' => 'SIMULASI-05',
-            'alamat' => 'Alamat simulasi - Jl. Cibiru, Cibiru, Bandung.',
+            'nama' => 'Dinda Maharani',
+            'no_whatsapp' => '081234567805',
+            'alamat' => 'Jl. Cibiru No. 103, Cibiru, Bandung',
+            'username' => 'dinda.maharani',
+            'email' => 'dinda.maharani@example.com',
+            'legacy_phone' => 'SIMULASI-05',
+            'legacy_name' => 'Simulasi - Dinda Maharani',
         ],
         'rafi' => [
-            'nama' => 'Simulasi - Rafi Akbar',
-            'no_whatsapp' => 'SIMULASI-06',
-            'alamat' => 'Alamat simulasi - Jl. Arcamanik, Arcamanik, Bandung.',
+            'nama' => 'Rafi Akbar',
+            'no_whatsapp' => '081234567806',
+            'alamat' => 'Jl. Arcamanik No. 51, Arcamanik, Bandung',
+            'username' => 'rafi.akbar',
+            'email' => 'rafi.akbar@example.com',
+            'legacy_phone' => 'SIMULASI-06',
+            'legacy_name' => 'Simulasi - Rafi Akbar',
         ],
     ];
 
     private const ORDERS = [
         [
-            'code' => 'BB-SIM00001',
+            'kode' => 'BB-SIM00001',
             'customer' => 'nabila',
-            'days_ago' => 1,
-            'source' => 'online',
+            'products' => ['Cheese Roll' => 1, 'Choco Chip Cookies' => 1],
             'status' => 'pending',
             'payment_status' => 'pending',
             'payment_method' => 'transfer',
             'delivery_method' => 'delivery',
             'delivery' => 15000,
+            'days_ago' => 1,
+            'source' => 'online',
             'note' => 'Menunggu pembayaran pelanggan.',
-            'items' => [['Cheese Roll', 1], ['Choco Chip Cookies', 1]],
         ],
         [
-            'code' => 'BB-SIM00002',
+            'kode' => 'BB-SIM00002',
             'customer' => 'rizky',
-            'days_ago' => 2,
-            'source' => 'online',
-            'status' => 'pending',
+            'products' => ['Brownies Panggang 64 Sekat' => 1],
+            'status' => 'confirmed',
             'payment_status' => 'verified',
             'payment_method' => 'ewallet',
             'delivery_method' => 'pickup',
             'delivery' => 0,
-            'note' => 'Pembayaran diterima, menunggu konfirmasi pesanan.',
-            'items' => [['Brownies Panggang 64 Sekat', 1]],
+            'days_ago' => 2,
+            'source' => 'online',
+            'note' => 'Pembayaran diterima dan pesanan dikonfirmasi.',
         ],
         [
-            'code' => 'BB-SIM00003',
+            'kode' => 'BB-SIM00003',
             'customer' => 'siti',
-            'days_ago' => 4,
-            'source' => 'online',
+            'products' => ['Bolen Pisang' => 2],
             'status' => 'confirmed',
             'payment_status' => 'verified',
             'payment_method' => 'transfer',
             'delivery_method' => 'delivery',
             'delivery' => 15000,
+            'days_ago' => 4,
+            'source' => 'online',
             'note' => 'Pembayaran telah diverifikasi dan pesanan dikonfirmasi.',
-            'items' => [['Bolen Pisang', 2]],
         ],
         [
-            'code' => 'BB-SIM00004',
+            'kode' => 'BB-SIM00004',
             'customer' => 'fajar',
-            'days_ago' => 6,
-            'source' => 'online',
+            'products' => ['Cheese Roll' => 1, 'Yoghurt 250 ml' => 1],
             'status' => 'processing',
             'payment_status' => 'verified',
             'payment_method' => 'ewallet',
             'delivery_method' => 'delivery',
             'delivery' => 15000,
+            'days_ago' => 6,
+            'source' => 'online',
             'note' => 'Pesanan sedang disiapkan.',
-            'items' => [['Cheese Roll', 1], ['Yoghurt 250 ml', 1]],
         ],
         [
-            'code' => 'BB-SIM00005',
+            'kode' => 'BB-SIM00005',
             'customer' => 'dinda',
-            'days_ago' => 8,
-            'source' => 'online',
+            'products' => ['Cheese Milkcake' => 1],
             'status' => 'ready',
             'payment_status' => 'verified',
             'payment_method' => 'transfer',
             'delivery_method' => 'pickup',
             'delivery' => 0,
+            'days_ago' => 8,
+            'source' => 'online',
             'note' => 'Pesanan siap diambil.',
-            'items' => [['Cheese Milkcake', 1]],
         ],
         [
-            'code' => 'BB-SIM00006',
+            'kode' => 'BB-SIM00006',
             'customer' => 'rafi',
-            'days_ago' => 10,
-            'source' => 'online',
+            'products' => ['Brownies Panggang 20 Sekat' => 1, 'Butter Cookies' => 1],
             'status' => 'completed',
             'payment_status' => 'verified',
             'payment_method' => 'transfer',
             'delivery_method' => 'delivery',
             'delivery' => 15000,
+            'days_ago' => 10,
+            'source' => 'online',
             'note' => 'Pesanan telah diterima pelanggan.',
-            'items' => [['Brownies Panggang 20 Sekat', 1], ['Butter Cookies', 1]],
         ],
         [
-            'code' => 'BB-SIM00007',
+            'kode' => 'BB-SIM00007',
             'customer' => 'nabila',
-            'days_ago' => 15,
-            'source' => 'online',
+            'products' => ['Bolen Lilit' => 1, 'Yoghurt 1 L' => 1],
             'status' => 'completed',
             'payment_status' => 'verified',
             'payment_method' => 'ewallet',
             'delivery_method' => 'pickup',
             'delivery' => 0,
+            'days_ago' => 15,
+            'source' => 'online',
             'note' => 'Pesanan telah diterima pelanggan.',
-            'items' => [['Bolen Lilit', 1], ['Yoghurt 1 L', 1]],
         ],
         [
-            'code' => 'BB-SIM00008',
+            'kode' => 'BB-SIM00008',
             'customer' => 'rizky',
-            'days_ago' => 22,
-            'source' => 'online',
+            'products' => ['Brownies Lumer' => 1],
             'status' => 'cancelled',
             'payment_status' => 'rejected',
             'payment_method' => 'transfer',
             'delivery_method' => 'delivery',
             'delivery' => 15000,
+            'days_ago' => 22,
+            'source' => 'online',
             'note' => 'Pesanan dibatalkan karena pembayaran ditolak.',
-            'items' => [['Brownies Lumer', 1]],
         ],
         [
-            'code' => 'BB-SIM00009',
+            'kode' => 'BB-SIM00009',
             'customer' => 'siti',
-            'days_ago' => 35,
-            'source' => 'online',
+            'products' => ['Cheese Roll' => 1, 'Choco Chip Cookies' => 1],
             'status' => 'completed',
             'payment_status' => 'verified',
             'payment_method' => 'transfer',
             'delivery_method' => 'delivery',
             'delivery' => 15000,
+            'days_ago' => 35,
+            'source' => 'online',
             'note' => 'Pesanan telah diterima pelanggan.',
-            'items' => [['Cheese Roll', 1], ['Choco Chip Cookies', 1]],
         ],
         [
-            'code' => 'BB-POS-SIM001',
+            'kode' => 'BB-POS-SIM001',
             'customer' => 'fajar',
-            'days_ago' => 1,
-            'source' => 'pos',
+            'products' => ['Cheese Roll' => 1, 'Brownies Panggang 64 Sekat' => 1],
             'status' => 'completed',
             'payment_status' => 'verified',
             'payment_method' => 'cash',
             'delivery_method' => 'pickup',
             'delivery' => 0,
+            'days_ago' => 1,
+            'source' => 'pos',
             'note' => 'Transaksi kasir tunai telah selesai.',
-            'items' => [['Cheese Roll', 1], ['Brownies Panggang 64 Sekat', 1]],
         ],
         [
-            'code' => 'BB-POS-SIM002',
+            'kode' => 'BB-POS-SIM002',
             'customer' => 'dinda',
-            'days_ago' => 7,
-            'source' => 'pos',
+            'products' => ['Brownies Lumer' => 2],
             'status' => 'completed',
             'payment_status' => 'verified',
             'payment_method' => 'ewallet',
             'delivery_method' => 'pickup',
             'delivery' => 0,
-            'note' => 'Transaksi kasir E-Wallet telah selesai.',
-            'items' => [['Brownies Lumer', 2]],
+            'days_ago' => 7,
+            'source' => 'pos',
+            'note' => 'Transaksi kasir e-wallet telah selesai.',
         ],
     ];
 
     private const PAGES = [
         'home' => [
             'eyebrow' => 'Beranda BENBEN CO.',
-            'title' => 'Cerita Manis dari Dapur BENBEN CO.',
-            'description' => 'Pilih cheese roll, brownies, bolen pisang, cookies, dan minuman sesuai katalog yang tersedia. Sesuaikan konten ini sebelum dipublikasikan.',
+            'title' => 'Kudapan bakery untuk setiap momen',
+            'description' => 'Jelajahi cheese roll, brownies, bolen pisang, cookies, dan minuman yang tersedia di katalog BENBEN CO.',
         ],
         'about' => [
             'eyebrow' => 'Tentang BENBEN CO.',
             'title' => 'Cerita dari Dapur BENBEN CO.',
-            'description' => 'Perkenalkan cerita dan perjalanan BENBEN CO. Periksa kembali setiap informasi sebelum halaman dipublikasikan.',
+            'description' => 'BENBEN CO. adalah toko bakery rumahan di Antapani, Bandung, yang menyajikan pilihan kudapan untuk dinikmati bersama.',
         ],
         'favorites' => [
             'eyebrow' => 'Menu Pilihan',
-            'title' => 'Kenali Produk Bakery Kami.',
-            'description' => 'Sesuaikan pengantar menu pilihan dengan katalog produk yang tersedia.',
+            'title' => 'Pilihan bakery untuk dibagikan',
+            'description' => 'Lihat pilihan produk bakery dan minuman yang tersedia di katalog.',
         ],
         'promotions' => [
             'eyebrow' => 'Informasi Promo',
             'title' => 'Penawaran BENBEN CO.',
-            'description' => 'Perbarui informasi sesuai promo resmi yang aktif sebelum halaman dipublikasikan.',
+            'description' => 'Periksa promo yang sedang aktif sebelum membuat pesanan.',
         ],
         'contact' => [
             'eyebrow' => 'Informasi Kontak',
             'title' => 'Hubungi BENBEN CO.',
-            'description' => 'Tambahkan alamat dan kanal kontak resmi bakery sebelum halaman dipublikasikan.',
+            'description' => 'Gunakan informasi kontak yang ditampilkan pada aplikasi untuk bertanya tentang produk dan pesanan.',
         ],
     ];
 
     public function run(): void
     {
-        $this->assertSafeTarget();
+        if (! $this->demoSeedingAllowed()) {
+            $this->command?->warn('DemoAdminPanelSeeder dilewati. Gunakan hanya pada local/testing atau aktifkan BENBEN_DEMO_SEED_ENABLED secara eksplisit.');
+
+            return;
+        }
 
         DB::transaction(function (): void {
-            $this->seedCatalogWhenEmpty();
-            $products = Product::query()->where('status', 'active')->orderBy('id_product')->get();
-
-            if ($products->isEmpty()) {
-                throw new RuntimeException('Seeder simulasi memerlukan minimal satu produk aktif. Katalog yang sudah ada tidak diubah.');
-            }
-
+            $this->seedCatalog();
+            $staff = $this->seedStaffAccounts();
             $customers = $this->seedCustomers();
-            $ratingCandidates = [];
-
-            foreach (self::ORDERS as $orderIndex => $definition) {
-                $existingOrder = Order::query()->where('kode_order', $definition['code'])->first();
-                if ($existingOrder) {
-                    if (! str_starts_with((string) $existingOrder->catatan, '[SIMULASI]')) {
-                        throw new RuntimeException('Nomor transaksi '.$definition['code'].' telah dipakai oleh data non-simulasi.');
-                    }
-
-                    continue;
-                }
-
-                $items = [];
-                $subtotal = 0;
-                foreach ($definition['items'] as $itemIndex => [$productName, $quantity]) {
-                    $product = $products->firstWhere('nama', $productName)
-                        ?? $products->get(($orderIndex + $itemIndex) % $products->count());
-                    $lineSubtotal = round((float) $product->harga * $quantity, 2);
-                    $subtotal += $lineSubtotal;
-                    $items[] = [
-                        'product' => $product,
-                        'quantity' => $quantity,
-                        'subtotal' => $lineSubtotal,
-                    ];
-                }
-
-                $delivery = (float) $definition['delivery'];
-                $discount = 0;
-                $total = round($subtotal + $delivery - $discount, 2);
-                $orderDate = now()->subDays($definition['days_ago'])->setTime(12, 0);
-                $cashReceived = $definition['source'] === 'pos' && $definition['payment_method'] === 'cash'
-                    ? (int) (ceil($total / 50000) * 50000)
-                    : null;
-
-                $order = Order::query()->create([
-                    'kode_order' => $definition['code'],
-                    'customer_id' => $customers[$definition['customer']]->id_customer,
-                    'tanggal' => $orderDate,
-                    'subtotal' => $subtotal,
-                    'delivery' => $delivery,
-                    'diskon' => $discount,
-                    'total' => $total,
-                    'status' => $definition['status'],
-                    'payment_method' => $definition['payment_method'],
-                    'payment_status' => $definition['payment_status'],
-                    'cash_received' => $cashReceived,
-                    'cash_change' => $cashReceived === null ? null : $cashReceived - $total,
-                    'delivery_method' => $definition['delivery_method'],
-                    'catatan' => '[SIMULASI] '.$definition['note'],
-                    'source' => $definition['source'],
-                ]);
-
-                foreach ($items as $item) {
-                    OrderDetail::query()->create([
-                        'order_id' => $order->id_order,
-                        'product_id' => $item['product']->id_product,
-                        'harga' => $item['product']->harga,
-                        'qty' => $item['quantity'],
-                        'subtotal' => $item['subtotal'],
-                    ]);
-                }
-
-                $this->createStatusHistory($order, $definition, $orderDate);
-
-                if ($definition['source'] === 'online' && $definition['status'] === 'completed') {
-                    $ratingCandidates[] = [
-                        'customer' => $customers[$definition['customer']],
-                        'product' => $items[0]['product'],
-                        'created_at' => $orderDate->copy()->addDay(),
-                    ];
-                }
-            }
-
-            $this->seedRatings($ratingCandidates);
+            $customerAccounts = $this->seedCustomerAccounts($customers);
+            $this->seedPromotions();
+            $orders = $this->seedOrders($customers);
+            $this->seedRatings();
             $this->seedPageContents();
+            $this->seedActivityLogs($staff, $customerAccounts, $orders);
         });
+
+        $this->command?->info('Data demonstrasi BENBEN CO. telah disiapkan dengan aman dan konsisten.');
     }
 
-    private function assertSafeTarget(): void
+    private function demoSeedingAllowed(): bool
     {
-        if (! in_array(config('app.env'), ['local', 'testing'], true)) {
-            throw new RuntimeException('Seeder simulasi hanya dapat dijalankan pada lingkungan local atau testing.');
+        if (in_array(config('app.env'), ['local', 'testing'], true)) {
+            return true;
         }
 
-        $connection = DB::getDefaultConnection();
-        if ($connection === 'mysql') {
-            $host = (string) config('database.connections.mysql.host');
-            if (! in_array($host, ['127.0.0.1', 'localhost', '::1'], true)) {
-                throw new RuntimeException('Seeder simulasi menolak koneksi MySQL non-lokal.');
+        return (bool) config('app.demo_seed_enabled');
+    }
+
+    /**
+     * @return array{admin: User, cashier: User}
+     */
+    private function seedStaffAccounts(): array
+    {
+        User::query()->whereIn('username', [
+            'nadia.pramesti',
+            'aditya.wijaya',
+        ])->delete();
+
+        return [
+            'admin' => $this->seedUser(
+                [
+                    'nama' => 'Admin01',
+                    'username' => 'admin@example.com',
+                    'email' => 'admin@example.com',
+                    'role' => 'admin',
+                    'customer_id' => null,
+                    'password' => 'admin123',
+                ]
+            ),
+            'cashier' => $this->seedUser(
+                [
+                    'nama' => 'Kasir01',
+                    'username' => 'kasir@example.com',
+                    'email' => 'kasir@example.com',
+                    'role' => 'kasir',
+                    'customer_id' => null,
+                    'password' => 'kasir123',
+                ]
+            ),
+        ];
+    }
+
+    private function seedUser(array $details, ?array $legacy = null): User
+    {
+        $user = User::query()->where('username', $details['username'])->first();
+        $isLegacy = false;
+
+        if (! $user && $legacy) {
+            $user = User::query()
+                ->where('username', $legacy['username'])
+                ->where('nama', $legacy['nama'])
+                ->first();
+            $isLegacy = (bool) $user;
+        }
+
+        if ($user && ! $isLegacy) {
+            if ($user->nama !== $details['nama']
+                || $user->email !== $details['email']
+                || $user->role !== $details['role']
+                || (int) $user->customer_id !== (int) ($details['customer_id'] ?? 0)) {
+                throw new RuntimeException("Username demo '{$details['username']}' telah digunakan oleh akun lain.");
             }
 
-            return;
+            $user->password = Hash::make($details['password']);
+            $user->save();
+
+            return $user;
         }
 
-        if ($connection !== 'sqlite') {
-            throw new RuntimeException('Seeder simulasi hanya mendukung SQLite atau MySQL lokal.');
+        $emailOwner = User::query()->where('email', $details['email'])->first();
+        if ($emailOwner && (! $user || $emailOwner->id_user !== $user->id_user)) {
+            throw new RuntimeException("Email demo '{$details['email']}' telah digunakan oleh akun lain.");
         }
+
+        $isNew = ! $user;
+        $user ??= new User;
+        $user->fill([
+            'nama' => $details['nama'],
+            'username' => $details['username'],
+            'email' => $details['email'],
+            'role' => $details['role'],
+            'customer_id' => $details['customer_id'],
+            'password' => Hash::make($details['password']),
+        ]);
+        if ($isNew) {
+            $user->is_active = true;
+        }
+        $user->save();
+
+        return $user;
     }
 
-    private function seedCatalogWhenEmpty(): void
-    {
-        if (Product::query()->exists()) {
-            return;
-        }
-
-        $categories = [
-            'brownies' => 'Brownies',
-            'cheese-roll' => 'Cheese Roll',
-            'bolen-pisang' => 'Bolen Pisang',
-            'cookies' => 'Cookies',
-            'drinks' => 'Minuman',
-        ];
-        $categoryIds = [];
-
-        foreach ($categories as $slug => $name) {
-            $categoryIds[$slug] = Category::query()->firstOrCreate(
-                ['slug' => $slug],
-                ['nama_kategori' => $name]
-            )->id_category;
-        }
-
-        $products = [
-            ['nama' => 'Cheese Roll (Simulasi)', 'category' => 'cheese-roll', 'harga' => 45000, 'stok' => 14],
-            ['nama' => 'Brownies Panggang 64 Sekat (Simulasi)', 'category' => 'brownies', 'harga' => 38000, 'stok' => 4],
-            ['nama' => 'Bolen Pisang (Simulasi)', 'category' => 'bolen-pisang', 'harga' => 38000, 'stok' => 0],
-            ['nama' => 'Choco Chip Cookies (Simulasi)', 'category' => 'cookies', 'harga' => 32000, 'stok' => 18],
-            ['nama' => 'Yoghurt 250 ml (Simulasi)', 'category' => 'drinks', 'harga' => 30000, 'stok' => 3],
-        ];
-        $createdAt = now()->subDays(90);
-
-        foreach ($products as $definition) {
-            $product = new Product([
-                'category_id' => $categoryIds[$definition['category']],
-                'nama' => $definition['nama'],
-                'deskripsi' => 'Produk contoh untuk simulasi Panel Admin; periksa katalog sebelum digunakan.',
-                'harga' => $definition['harga'],
-                'gambar' => null,
-                'stok' => $definition['stok'],
-                'status' => 'active',
-            ]);
-            $product->created_at = $createdAt;
-            $product->updated_at = $createdAt;
-            $product->save();
-        }
-    }
-
+    /**
+     * @return array<string, Customer>
+     */
     private function seedCustomers(): array
     {
         $customers = [];
@@ -389,13 +376,42 @@ class DemoAdminPanelSeeder extends Seeder
         foreach (self::CUSTOMERS as $key => $definition) {
             $customer = Customer::query()->where('no_whatsapp', $definition['no_whatsapp'])->first();
             if ($customer && $customer->nama !== $definition['nama']) {
-                throw new RuntimeException('Nomor simulasi pelanggan '.$definition['no_whatsapp'].' telah dipakai oleh data lain.');
+                throw new RuntimeException("Nomor pelanggan demo '{$definition['no_whatsapp']}' telah digunakan oleh data lain.");
             }
 
             if (! $customer) {
-                $customer = new Customer($definition);
-                $customer->created_at = now()->subDays(60);
-                $customer->save();
+                $legacy = Customer::query()
+                    ->where('no_whatsapp', $definition['legacy_phone'])
+                    ->first();
+
+                if (! $legacy) {
+                    $legacy = Customer::query()
+                        ->where('nama', $definition['legacy_name'])
+                        ->first();
+                }
+
+                if ($legacy) {
+                    if ($legacy->nama !== $definition['legacy_name']
+                        && $legacy->no_whatsapp !== $definition['legacy_phone']) {
+                        throw new RuntimeException("Data pelanggan lama untuk '{$definition['nama']}' tidak cocok.");
+                    }
+
+                    $legacy->fill([
+                        'nama' => $definition['nama'],
+                        'no_whatsapp' => $definition['no_whatsapp'],
+                        'alamat' => $definition['alamat'],
+                    ]);
+                    $legacy->save();
+                    $customer = $legacy;
+                }
+            }
+
+            if (! $customer) {
+                $customer = Customer::query()->create([
+                    'nama' => $definition['nama'],
+                    'no_whatsapp' => $definition['no_whatsapp'],
+                    'alamat' => $definition['alamat'],
+                ]);
             }
 
             $customers[$key] = $customer;
@@ -404,7 +420,197 @@ class DemoAdminPanelSeeder extends Seeder
         return $customers;
     }
 
-    private function createStatusHistory(Order $order, array $definition, Carbon $orderDate): void
+    private function seedCatalog(): void
+    {
+        $this->call(ProductSeeder::class);
+    }
+
+    /**
+     * @param  array<string, Customer>  $customers
+     * @return array<string, User>
+     */
+    private function seedCustomerAccounts(array $customers): array
+    {
+        $accounts = [];
+
+        foreach (self::CUSTOMERS as $key => $definition) {
+            $accounts[$key] = $this->seedUser([
+                'nama' => $definition['nama'],
+                'username' => $definition['username'],
+                'email' => $definition['email'],
+                'role' => 'customer',
+                'customer_id' => $customers[$key]->id_customer,
+                'password' => 'BenbenPelanggan!2025',
+            ]);
+        }
+
+        return $accounts;
+    }
+
+    private function seedPromotions(): void
+    {
+        $now = now();
+        $promotions = [
+            [
+                'kode_promo' => 'HEMAT10',
+                'nama_promo' => 'Potongan 10 Persen',
+                'jenis_diskon' => 'persen',
+                'nilai_diskon' => 10,
+                'tanggal_mulai' => $now->copy()->subDays(30)->toDateString(),
+                'tanggal_berakhir' => $now->copy()->addDays(90)->toDateString(),
+                'status' => 'active',
+            ],
+            [
+                'kode_promo' => 'ROTIBEN10',
+                'nama_promo' => 'Potongan Rp10.000',
+                'jenis_diskon' => 'nominal',
+                'nilai_diskon' => 10000,
+                'tanggal_mulai' => $now->copy()->subDays(30)->toDateString(),
+                'tanggal_berakhir' => $now->copy()->addDays(90)->toDateString(),
+                'status' => 'active',
+            ],
+        ];
+
+        foreach ($promotions as $promotion) {
+            $existing = Promotion::query()->where('kode_promo', $promotion['kode_promo'])->first();
+
+            if ($existing && $existing->nama_promo !== $promotion['nama_promo']) {
+                throw new RuntimeException("Kode promo '{$promotion['kode_promo']}' telah digunakan oleh promo lain.");
+            }
+
+            Promotion::query()->firstOrCreate(
+                ['kode_promo' => $promotion['kode_promo']],
+                $promotion
+            );
+        }
+    }
+
+    /**
+     * @param  array<string, Customer>  $customers
+     * @return array<string, Order>
+     */
+    private function seedOrders(array $customers): array
+    {
+        $products = Product::query()->where('status', 'active')->get()->keyBy('nama');
+        $orders = [];
+
+        foreach (self::ORDERS as $definition) {
+            $attributes = $this->orderAttributes($definition, $customers, $products);
+            $order = Order::query()->where('kode_order', $definition['kode'])->first();
+
+            if ($order && ! str_starts_with((string) $order->catatan, '[SIMULASI]')) {
+                throw new RuntimeException("Nomor pesanan '{$definition['kode']}' telah digunakan oleh data non-demo.");
+            }
+
+            if ($order) {
+                foreach (['customer_id', 'status', 'payment_status', 'payment_method', 'delivery_method', 'source'] as $field) {
+                    if ((string) $order->{$field} !== (string) $attributes[$field]) {
+                        throw new RuntimeException("Pesanan demo '{$definition['kode']}' tidak konsisten pada kolom {$field}.");
+                    }
+                }
+
+                if ($order->details()->exists()) {
+                    $this->assertOrderDetails($order, $definition, $products);
+                } else {
+                    $this->createOrderDetails($order, $definition, $products);
+                }
+            } else {
+                $order = Order::query()->create($attributes);
+                $this->createOrderDetails($order, $definition, $products);
+            }
+
+            $this->createStatusHistory($order, $definition);
+            $orders[$definition['kode']] = $order;
+        }
+
+        return $orders;
+    }
+
+    private function orderAttributes(array $definition, array $customers, $products): array
+    {
+        $subtotal = 0;
+        foreach ($definition['products'] as $productName => $quantity) {
+            $product = $products->get($productName);
+            if (! $product) {
+                throw new RuntimeException("Produk '{$productName}' tidak ditemukan atau tidak aktif; transaksi demo tidak dibuat.");
+            }
+
+            $subtotal += (float) $product->harga * $quantity;
+        }
+        $delivery = (float) $definition['delivery'];
+        $total = $subtotal + $delivery;
+        $cashReceived = $definition['source'] === 'pos' && $definition['payment_method'] === 'cash'
+            ? (int) (ceil($total / 50000) * 50000)
+            : null;
+
+        return [
+            'customer_id' => $customers[$definition['customer']]->id_customer,
+            'kode_order' => $definition['kode'],
+            'tanggal' => now()->subDays($definition['days_ago'])->setTime(12, 0),
+            'subtotal' => $subtotal,
+            'diskon' => 0,
+            'delivery' => $delivery,
+            'total' => $total,
+            'status' => $definition['status'],
+            'payment_status' => $definition['payment_status'],
+            'payment_method' => $definition['payment_method'],
+            'cash_received' => $cashReceived,
+            'cash_change' => $cashReceived === null ? null : $cashReceived - $total,
+            'delivery_method' => $definition['delivery_method'],
+            'catatan' => '[SIMULASI] '.$definition['note'],
+            'source' => $definition['source'],
+        ];
+    }
+
+    private function createOrderDetails(Order $order, array $definition, $products): void
+    {
+        foreach ($definition['products'] as $productName => $quantity) {
+            $product = $products->get($productName);
+            if (! $product) {
+                throw new RuntimeException("Produk '{$productName}' tidak ditemukan; detail pesanan tidak dibuat.");
+            }
+
+            OrderDetail::query()->firstOrCreate(
+                [
+                    'order_id' => $order->id_order,
+                    'product_id' => $product->id_product,
+                ],
+                [
+                    'harga' => $product->harga,
+                    'qty' => $quantity,
+                    'subtotal' => (float) $product->harga * $quantity,
+                ]
+            );
+        }
+    }
+
+    private function assertOrderDetails(Order $order, array $definition, $products): void
+    {
+        $details = $order->details()->get();
+
+        if ($details->count() !== count($definition['products'])) {
+            throw new RuntimeException("Detail pesanan demo '{$definition['kode']}' tidak lengkap.");
+        }
+
+        foreach ($definition['products'] as $productName => $quantity) {
+            $product = $products->get($productName);
+            $detail = $product
+                ? $details->firstWhere('product_id', $product->id_product)
+                : null;
+
+            if (! $detail || (int) $detail->qty !== $quantity) {
+                throw new RuntimeException("Detail produk pada pesanan demo '{$definition['kode']}' tidak sesuai.");
+            }
+        }
+
+        $subtotal = (float) $details->sum('subtotal');
+        if (round($subtotal, 2) !== round((float) $order->subtotal, 2)
+            || round((float) $order->total, 2) !== round($subtotal + (float) $order->delivery - (float) $order->diskon, 2)) {
+            throw new RuntimeException("Perhitungan total pesanan demo '{$definition['kode']}' tidak konsisten.");
+        }
+    }
+
+    private function createStatusHistory(Order $order, array $definition): void
     {
         $steps = match (true) {
             $definition['source'] === 'pos' => ['completed'],
@@ -416,60 +622,128 @@ class DemoAdminPanelSeeder extends Seeder
             $definition['status'] === 'cancelled' => ['pending', 'cancelled'],
         };
         $previousStatus = null;
+        $orderDate = $order->tanggal->copy();
 
         foreach ($steps as $index => $status) {
-            OrderStatusHistory::query()->create([
-                'order_id' => $order->id_order,
-                'from_status' => $previousStatus,
-                'to_status' => $status,
-                'changed_by' => null,
-                'source' => 'simulasi',
-                'changed_at' => $orderDate->copy()->addMinutes($index * 20),
-            ]);
+            OrderStatusHistory::query()->firstOrCreate(
+                [
+                    'order_id' => $order->id_order,
+                    'to_status' => $status,
+                    'source' => 'simulasi',
+                ],
+                [
+                    'from_status' => $previousStatus,
+                    'changed_by' => null,
+                    'changed_at' => $orderDate->copy()->addMinutes($index * 20),
+                ]
+            );
             $previousStatus = $status;
         }
     }
 
-    private function seedRatings(array $candidates): void
+    private function seedRatings(): void
     {
         $comments = [
-            'Data simulasi: teksturnya lembut dan rasanya seimbang.',
-            'Data simulasi: cocok dinikmati bersama keluarga.',
-            'Data simulasi: contoh ulasan untuk pengujian tampilan.',
+            'BB-SIM00006' => 'Browniesnya lembut dan cocok dinikmati bersama keluarga.',
+            'BB-SIM00007' => 'Bolen pisangnya harum dengan lapisan pastri yang renyah.',
+            'BB-SIM00009' => 'Cheese roll terasa gurih dan pas untuk teman minum teh.',
         ];
+        $orders = Order::query()
+            ->whereIn('kode_order', ['BB-SIM00006', 'BB-SIM00007', 'BB-SIM00009'])
+            ->where('status', 'completed')
+            ->with(['customer', 'details.product'])
+            ->orderBy('kode_order')
+            ->get();
 
-        foreach ($candidates as $index => $candidate) {
-            $name = $candidate['customer']->nama;
-            $productId = $candidate['product']->id_product;
-            $comment = $comments[$index % count($comments)];
-            $exists = DB::table('ratings')
-                ->where('product_id', $productId)
-                ->where('nama_customer', $name)
-                ->where('komentar', $comment)
-                ->exists();
-
-            if ($exists) {
+        foreach ($orders as $order) {
+            $detail = $order->details->first();
+            if (! $detail || ! $order->customer) {
                 continue;
             }
 
-            DB::table('ratings')->insert([
-                'product_id' => $productId,
-                'nama_customer' => $name,
-                'rating' => [5, 4, 5][$index % 3],
-                'komentar' => $comment,
-                'created_at' => $candidate['created_at'],
-            ]);
+            $legacyRating = Rating::query()
+                ->where('product_id', $detail->product_id)
+                ->where('nama_customer', 'Simulasi - '.$order->customer->nama)
+                ->first();
+
+            if ($legacyRating) {
+                $legacyRating->nama_customer = $order->customer->nama;
+                $legacyRating->save();
+
+                continue;
+            }
+
+            Rating::query()->firstOrCreate(
+                [
+                    'product_id' => $detail->product_id,
+                    'nama_customer' => $order->customer->nama,
+                ],
+                [
+                    'rating' => 5,
+                    'komentar' => $comments[$order->kode_order] ?? 'Produk dinikmati pelanggan.',
+                ]
+            );
         }
     }
 
     private function seedPageContents(): void
     {
-        foreach (self::PAGES as $pageKey => $content) {
+        foreach (self::PAGES as $pageKey => $page) {
             PageContent::query()->firstOrCreate(
                 ['page_key' => $pageKey],
                 [
-                    ...$content,
+                    ...$page,
                     'status' => 'draft',
+                ]
+            );
+        }
+    }
+
+    private function seedActivityLogs(array $staff, array $customerAccounts, array $orders): void
+    {
+        $activityDefinitions = [
+            [
+                'user' => $staff['admin'],
+                'activity_type' => 'demo_seed',
+                'description' => 'Data demonstrasi BENBEN CO. disiapkan.',
+                'related_type' => 'User',
+                'related_id' => $staff['admin']->id_user,
+                'days_ago' => 2,
+            ],
+            [
+                'user' => $staff['cashier'],
+                'activity_type' => 'pos_transaction',
+                'description' => 'Transaksi kasir demonstrasi '.$orders['BB-POS-SIM001']->kode_order.' tercatat.',
+                'related_type' => 'Order',
+                'related_id' => $orders['BB-POS-SIM001']->id_order,
+                'days_ago' => 1,
+            ],
+            [
+                'user' => $customerAccounts['nabila'],
+                'activity_type' => 'order_placed',
+                'description' => 'Pesanan demonstrasi '.$orders['BB-SIM00001']->kode_order.' dibuat.',
+                'related_type' => 'Order',
+                'related_id' => $orders['BB-SIM00001']->id_order,
+                'days_ago' => 0,
+            ],
+        ];
+
+        foreach ($activityDefinitions as $definition) {
+            $user = $definition['user'];
+            ActivityLog::query()->firstOrCreate(
+                [
+                    'user_id' => $user->id_user,
+                    'activity_type' => $definition['activity_type'],
+                    'description' => $definition['description'],
+                    'related_type' => $definition['related_type'],
+                    'related_id' => $definition['related_id'],
+                ],
+                [
+                    'user_name' => $user->nama,
+                    'user_email' => $user->email,
+                    'role_name' => $user->role,
+                    'status' => 'success',
+                    'created_at' => now()->subDays($definition['days_ago']),
                 ]
             );
         }

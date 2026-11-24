@@ -91,6 +91,7 @@
                                 <i class="bi bi-eye" aria-hidden="true"></i>
                             </button>
                         </div>
+                        <small class="form-text">Password harus berisi minimal 8 karakter.</small>
                     </div>
 
                     <div class="bb-staff-login-field">
@@ -122,6 +123,7 @@
 
         </section>
     </main>
+    <script src="{{ asset('js/form-inputs.js') }}"></script>
     <script>
         document.querySelector('.bb-customer-register-form').addEventListener('submit', function () {
             const button = this.querySelector('[data-loading-button]');

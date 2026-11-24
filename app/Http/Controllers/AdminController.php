@@ -13,11 +13,13 @@ use App\Models\Product;
 use App\Models\Promotion;
 use App\Models\Rating;
 use App\Models\StockLog;
+use App\Models\StoreSetting;
 use App\Models\User;
 use App\Models\UserSession;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -31,6 +33,18 @@ class AdminController extends Controller
     public function settings()
     {
         return view('admin.settings');
+    }
+
+    public function storeSettings()
+    {
+        abort_unless(Auth::user()->role === 'admin', 403);
+
+        $paymentSettings = StoreSetting::current();
+
+        return view('admin.store-settings', [
+            'paymentSettings' => $paymentSettings,
+            'bankAccounts' => old('bank_accounts', $paymentSettings->bankAccounts()),
+        ]);
     }
 
     public function updateSettings(Request $request)
@@ -48,6 +62,94 @@ class AdminController extends Controller
         $user->save();
 
         return back()->with('success', 'Pengaturan akun berhasil diperbarui.');
+    }
+
+    public function updatePaymentSettings(Request $request)
+    {
+        abort_unless(Auth::user()->role === 'admin', 403);
+
+        $data = $request->validate([
+            'delivery_fee' => ['required', 'integer', 'min:0', 'max:10000000'],
+            'bank_accounts_present' => ['nullable', 'in:1'],
+            'bank_accounts' => ['nullable', 'array', 'max:10'],
+            'bank_accounts.*' => ['array'],
+            'bank_accounts.*.bank_name' => ['nullable', 'string', 'max:100'],
+            'bank_accounts.*.account_number' => ['nullable', 'string', 'max:50'],
+            'bank_accounts.*.account_name' => ['nullable', 'string', 'max:100'],
+            'bank_name' => ['nullable', 'string', 'max:100'],
+            'bank_account_number' => ['nullable', 'string', 'max:50'],
+            'bank_account_name' => ['nullable', 'string', 'max:100'],
+            'ewallet_provider' => ['nullable', 'string', 'max:100'],
+            'ewallet_account_number' => ['nullable', 'string', 'max:50'],
+            'ewallet_account_name' => ['nullable', 'string', 'max:100'],
+            'qris_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'remove_qris_image' => ['nullable', 'boolean'],
+        ]);
+
+        $settings = StoreSetting::current();
+        if ($request->boolean('bank_accounts_present')) {
+            $bankAccounts = $this->normalizeBankAccounts($data['bank_accounts'] ?? []);
+        } elseif ($request->exists('bank_name') || $request->exists('bank_account_number') || $request->exists('bank_account_name')) {
+            $legacyAccount = [
+                'bank_name' => $data['bank_name'] ?? '',
+                'account_number' => $data['bank_account_number'] ?? '',
+                'account_name' => $data['bank_account_name'] ?? '',
+            ];
+            $bankAccounts = $this->normalizeBankAccounts([$legacyAccount]);
+        } else {
+            $bankAccounts = $settings->bankAccounts();
+        }
+
+        $settings->fill(collect($data)->only([
+            'delivery_fee',
+            'ewallet_provider',
+            'ewallet_account_number',
+            'ewallet_account_name',
+        ])->all());
+        $settings->bank_accounts = $bankAccounts;
+        $settings->bank_name = $bankAccounts[0]['bank_name'] ?? null;
+        $settings->bank_account_number = $bankAccounts[0]['account_number'] ?? null;
+        $settings->bank_account_name = $bankAccounts[0]['account_name'] ?? null;
+
+        if ($request->boolean('remove_qris_image')) {
+            $settings->qris_image_path = null;
+        }
+
+        if ($request->hasFile('qris_image')) {
+            $settings->qris_image_path = $request->file('qris_image')->store('payment-methods', 'public');
+        }
+
+        $settings->save();
+
+        return back()->with('success', 'Pengaturan ongkos kirim dan pembayaran berhasil diperbarui.');
+    }
+
+    private function normalizeBankAccounts(array $accounts): array
+    {
+        $normalized = [];
+
+        foreach ($accounts as $index => $account) {
+            $values = [
+                'bank_name' => trim((string) ($account['bank_name'] ?? '')),
+                'account_number' => trim((string) ($account['account_number'] ?? '')),
+                'account_name' => trim((string) ($account['account_name'] ?? '')),
+            ];
+            $hasAnyValue = collect($values)->contains(fn (string $value) => filled($value));
+
+            if (! $hasAnyValue) {
+                continue;
+            }
+
+            if (collect($values)->contains(fn (string $value) => blank($value))) {
+                throw ValidationException::withMessages([
+                    "bank_accounts.{$index}.bank_name" => 'Lengkapi nama bank, nomor rekening, dan nama pemilik untuk setiap rekening.',
+                ]);
+            }
+
+            $normalized[] = $values;
+        }
+
+        return $normalized;
     }
 
     public function companyProfile()
@@ -248,6 +350,10 @@ class AdminController extends Controller
 
     public function products(Request $request)
     {
+        $request->validate([
+            'search' => ['nullable', 'string', 'max:100'],
+        ]);
+
         $products = Product::query()->with('category')
             ->when($request->filled('search'), fn (Builder $query) => $query->where('nama', 'like', '%'.$request->string('search').'%'))
             ->when($request->filled('category'), fn (Builder $query) => $query->where('category_id', $request->integer('category')))
@@ -257,9 +363,21 @@ class AdminController extends Controller
         return view('admin.products', compact('products', 'categories'));
     }
 
-    public function categories()
+    public function categories(Request $request)
     {
-        $categories = Category::query()->withCount('products')->latest('id_category')->paginate(10);
+        $request->validate([
+            'search' => ['nullable', 'string', 'max:100'],
+        ]);
+
+        $search = '%'.$request->string('search').'%';
+        $categories = Category::query()->withCount('products')
+            ->when($request->filled('search'), function (Builder $query) use ($search) {
+                $query->where(function (Builder $categoryQuery) use ($search) {
+                    $categoryQuery->where('nama_kategori', 'like', $search)
+                        ->orWhere('slug', 'like', $search);
+                });
+            })
+            ->latest('id_category')->paginate(10)->withQueryString();
 
         return view('admin.categories', compact('categories'));
     }
@@ -422,6 +540,17 @@ class AdminController extends Controller
         $user->is_active = ! (bool) $user->is_active;
         $user->save();
 
+        if (! $user->is_active && Schema::hasTable('user_sessions')) {
+            UserSession::query()
+                ->where('user_id', $user->id_user)
+                ->where('status', 'active')
+                ->update([
+                    'status' => 'logged_out',
+                    'logout_at' => now(),
+                    'last_activity_at' => now(),
+                ]);
+        }
+
         $this->logActivity('user_status_updated', 'Admin '.((bool) $user->is_active ? 'mengaktifkan' : 'menonaktifkan').' akun '.$user->nama, 'user', $user->id_user, ['status' => $user->is_active ? 'active' : 'inactive']);
 
         return back()->with('success', 'Status akun berhasil diperbarui.');
@@ -506,7 +635,7 @@ class AdminController extends Controller
         UserSession::syncExpiredSessions();
 
         if (! Schema::hasTable('user_sessions')) {
-            return view('admin.sessions', ['sessions' => new \Illuminate\Pagination\LengthAwarePaginator([], 0, 15, 1)]);
+            return view('admin.sessions', ['sessions' => new LengthAwarePaginator([], 0, 15, 1)]);
         }
 
         $sessions = UserSession::query()->with('user')

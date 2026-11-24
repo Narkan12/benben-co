@@ -383,9 +383,27 @@
 .bb-action-icons a:hover, .bb-action-icons button:hover{ background: var(--bb-dark-choc); color: #fff; }
 
 .bb-filter-bar{
-  display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+  display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end;
   margin-bottom: 22px;
 }
+
+@media (min-width: 576px){
+  .bb-filter-bar .bb-filter-field .bb-form-label{
+    display:flex;
+    min-height:2.5em;
+    align-items:flex-end;
+  }
+}
+
+.bb-pos-payment-layout{
+  display:grid;
+  grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);
+  gap:12px;
+  align-items:start;
+}
+.bb-pos-payment-layout>*{min-width:0;}
+.bb-pos-payment-options{display:flex;flex-wrap:wrap;gap:6px;}
+.bb-pos-payment-options>.btn-bb{max-width:100%;white-space:nowrap;}
 
 .bb-report-export{ display: flex; gap: 10px; }
 
@@ -778,6 +796,66 @@
 .bb-customer-shell .bb-customer-empty-state>span{color:var(--bb-theme-muted);font-size:.74rem;}
 .bb-customer-shell .bb-customer-empty-state>.btn-bb{margin-top:4px;}
 .bb-customer-shell .bb-customer-empty-state>i{color:#b98a60;}
+.bb-customer-shell .bb-customer-orders-empty-state{
+  min-height:0;
+  gap:14px;
+  margin-bottom:24px;
+  padding:clamp(24px,4vw,48px);
+}
+.bb-customer-shell .bb-customer-orders-empty-icon{
+  display:grid;
+  width:64px;
+  height:64px;
+  place-items:center;
+  border:1px solid var(--bb-theme-border);
+  border-radius:50%;
+  color:var(--bb-theme-accent);
+  background:var(--bb-theme-surface-secondary);
+  font-size:1.6rem;
+}
+.bb-customer-shell .bb-customer-orders-empty-state>h2{
+  color:var(--bb-theme-text);
+  font-size:1.35rem;
+}
+.bb-customer-shell .bb-customer-orders-empty-state>.section-sub{
+  max-width:560px;
+  margin:0;
+  color:var(--bb-theme-muted);
+  font-size:.84rem;
+}
+.bb-customer-shell .bb-customer-order-start-steps{
+  display:grid;
+  width:min(100%,900px);
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px;
+  margin:8px 0;
+  text-align:left;
+}
+.bb-customer-shell .bb-customer-order-start-steps>article{
+  display:flex;
+  min-width:0;
+  flex-direction:column;
+  gap:5px;
+  padding:16px;
+  border:1px solid var(--bb-theme-border);
+  border-radius:12px;
+  background:var(--bb-theme-surface-secondary);
+}
+.bb-customer-shell .bb-customer-order-start-steps>article>span{
+  color:var(--bb-theme-accent);
+  font-size:.72rem;
+  font-weight:700;
+}
+.bb-customer-shell .bb-customer-order-start-steps>article>strong{
+  color:var(--bb-theme-text);
+  font-size:.82rem;
+}
+.bb-customer-shell .bb-customer-order-start-steps>article>p{
+  margin:0;
+  color:var(--bb-theme-muted);
+  font-size:.74rem;
+}
+.bb-customer-shell .bb-customer-orders-empty-state>.btn-bb{margin-top:0;}
 .bb-admin-shell .bb-upload-drop{
   border-color:#d6c3ad;
   background:#f7f2ea;
@@ -844,9 +922,70 @@
 }
 
 @media (max-width: 575px){
+  .bb-customer-shell .bb-customer-order-start-steps{grid-template-columns:minmax(0,1fr);}
+  .bb-pos-payment-layout{grid-template-columns:minmax(0,1fr);}
   .bb-dashboard-profile{gap:0;padding:3px;}
   .bb-dashboard-profile-copy,
   .bb-dashboard-profile>i{display:none;}
   .bb-dashboard-avatar{width:34px;height:34px;flex-basis:34px;}
   .bb-admin-topbar-link{margin-left:auto!important;}
+}
+
+.bb-store-settings-panel{width:100%;max-width:none;}
+.bb-store-settings-hero{
+  display:flex;
+  align-items:center;
+  gap:17px;
+  margin-bottom:27px;
+  padding:21px 23px;
+  border:1px solid rgba(148,101,64,.18);
+  border-radius:12px;
+  background:linear-gradient(120deg,#f6e8d5 0%,#fffaf3 68%,#f3e7d8 100%);
+}
+.bb-store-settings-hero-icon,
+.bb-store-settings-section-icon{
+  display:grid;
+  flex:0 0 auto;
+  place-items:center;
+  color:#fff9f1;
+  background:linear-gradient(135deg,#815b3e,#4b3128);
+}
+.bb-store-settings-hero-icon{width:50px;height:50px;border-radius:13px;font-size:1.35rem;}
+.bb-store-settings-eyebrow{color:#98704e;font-size:.62rem;font-weight:700;letter-spacing:.13em;}
+.bb-store-settings-hero h3{margin:3px 0 4px;color:#3a2118;font-family:var(--font-display);font-size:1.18rem;}
+.bb-store-settings-hero p,
+.bb-store-settings-section-heading p{margin:0;color:rgba(58,33,24,.65);font-size:.76rem;line-height:1.55;}
+.bb-store-settings-section+.bb-store-settings-section{margin-top:27px;padding-top:24px;border-top:1px solid rgba(101,64,45,.14);}
+.bb-store-settings-section-heading{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+.bb-store-settings-section-icon{width:38px;height:38px;border-radius:10px;font-size:1rem;}
+.bb-store-settings-section-heading h3{margin:0 0 3px;color:var(--bb-dark-choc);font-family:var(--font-display);font-size:1rem;}
+.bb-delivery-fee-note{display:flex;min-height:44px;align-items:center;gap:11px;padding:10px 13px;border:1px solid rgba(101,64,45,.12);border-radius:9px;color:#6f5c4d;background:rgba(255,255,255,.55);font-size:.73rem;line-height:1.45;}
+.bb-delivery-fee-note i{color:#8e694a;font-size:1rem;}
+.bb-add-bank-account{display:inline-flex;align-items:center;gap:7px;margin-left:auto;white-space:nowrap;}
+.bb-bank-account-list{display:grid;gap:12px;}
+.bb-bank-account-card{padding:16px;border:1px solid rgba(101,64,45,.15);border-radius:11px;background:rgba(255,255,255,.55);}
+.bb-bank-account-card-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;color:#755338;font-size:.76rem;font-weight:700;}
+.bb-bank-account-card-heading>span{display:inline-flex;align-items:center;gap:8px;}
+.bb-bank-account-card-heading>span>i{font-size:.9rem;}
+.bb-remove-bank-account{display:inline-flex;align-items:center;gap:6px;padding:5px 8px;border:0;border-radius:6px;color:#95504a;background:transparent;font-size:.69rem;}
+.bb-remove-bank-account:hover{background:#f8e9e5;}
+.bb-store-settings-hint{display:flex;align-items:flex-start;gap:7px;margin:12px 0 0;color:#78695d;font-size:.7rem;}
+.bb-store-settings-hint i{margin-top:2px;color:#9a724e;}
+.bb-qris-current{display:flex;align-items:center;gap:17px;margin-top:16px;padding:12px;border:1px solid rgba(101,64,45,.14);border-radius:10px;background:rgba(255,255,255,.52);}
+.bb-qris-current img{width:116px;height:116px;object-fit:contain;border:1px solid rgba(101,64,45,.1);border-radius:8px;background:#fff;}
+.bb-store-settings-footer{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-top:25px;padding-top:18px;border-top:1px solid rgba(101,64,45,.14);}
+.bb-store-settings-footer>span{display:inline-flex;align-items:center;gap:7px;color:#76685d;font-size:.71rem;}
+.bb-store-settings-footer>span i{color:#7c8b54;font-size:.9rem;}
+.bb-store-settings-footer .btn-bb{display:inline-flex;align-items:center;gap:7px;white-space:nowrap;}
+
+@media (max-width: 767px){
+  .bb-store-settings-hero{align-items:flex-start;padding:17px;}
+  .bb-store-settings-section-heading{flex-wrap:wrap;}
+  .bb-add-bank-account{margin-left:50px;}
+}
+@media (max-width: 575px){
+  .bb-store-settings-hero-icon{width:42px;height:42px;}
+  .bb-bank-account-card{padding:12px;}
+  .bb-store-settings-footer{align-items:stretch;flex-direction:column;}
+  .bb-store-settings-footer .btn-bb{justify-content:center;}
 }

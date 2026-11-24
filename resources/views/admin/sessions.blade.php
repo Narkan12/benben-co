@@ -13,19 +13,24 @@
 
     <div class="bb-dash-topbar">
         <div>
-            <span class="eyebrow">Admin Panel</span>
             <h1 class="section-title" style="font-size:1.6rem;">Monitoring Sesi</h1>
         </div>
     </div>
 
     <form method="GET" class="bb-filter-bar">
-        <input type="search" name="search" value="{{ request('search') }}" class="bb-input" placeholder="Cari nama, email, atau IP..." style="max-width:260px;">
-        <select name="status" class="bb-input">
-            <option value="">Semua status</option>
-            @foreach($statusLabels as $key => $label)
-                <option value="{{ $key }}" {{ request('status') === $key ? 'selected' : '' }}>{{ $label }}</option>
-            @endforeach
-        </select>
+        <div class="bb-filter-field">
+            <label for="session-search" class="bb-form-label">Cari pengguna, email, atau IP</label>
+            <input id="session-search" type="search" name="search" value="{{ request('search') }}" class="bb-input" placeholder="Nama, email, atau IP">
+        </div>
+        <div class="bb-filter-field">
+            <label for="session-status" class="bb-form-label">Status sesi</label>
+            <select id="session-status" name="status" class="bb-input">
+                <option value="">Semua status</option>
+                @foreach($statusLabels as $key => $label)
+                    <option value="{{ $key }}" {{ request('status') === $key ? 'selected' : '' }}>{{ $label }}</option>
+                @endforeach
+            </select>
+        </div>
         <button type="submit" class="btn-bb btn-bb-primary btn-bb-sm">Terapkan</button>
         <a href="{{ route('admin.sessions') }}" class="btn-bb btn-bb-outline btn-bb-sm">Reset</a>
     </form>

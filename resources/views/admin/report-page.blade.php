@@ -13,7 +13,6 @@
 
     <div class="bb-dash-topbar">
         <div>
-            <span class="eyebrow">Admin Panel</span>
             <h2 class="section-title" style="font-size:1.6rem;">{{ $title }}</h2>
         </div>
         <div class="bb-report-actions d-flex flex-wrap gap-2">
@@ -26,35 +25,51 @@
 
     <form method="GET" class="bb-filter-bar">
         @if(in_array($reportType, ['transactions', 'sales', 'finance'], true))
-            <label class="bb-form-label mb-0">Dari</label>
-            <input type="date" name="start_date" value="{{ request('start_date', $startDate) }}" class="bb-input">
-            <label class="bb-form-label mb-0">Sampai</label>
-            <input type="date" name="end_date" value="{{ request('end_date', $endDate) }}" class="bb-input">
+            <div class="bb-filter-field">
+                <label for="report-start-date" class="bb-form-label">Dari tanggal</label>
+                <input id="report-start-date" type="date" name="start_date" value="{{ request('start_date', $startDate) }}" class="bb-input">
+            </div>
+            <div class="bb-filter-field">
+                <label for="report-end-date" class="bb-form-label">Sampai tanggal</label>
+                <input id="report-end-date" type="date" name="end_date" value="{{ request('end_date', $endDate) }}" class="bb-input">
+            </div>
         @endif
         @if(in_array($reportType, ['transactions', 'products', 'stock', 'finance'], true))
-            <input type="search" name="search" value="{{ request('search') }}" class="bb-input" placeholder="{{ $searchLabel }}" style="max-width:220px;">
+            <div class="bb-filter-field">
+                <label for="report-search" class="bb-form-label">{{ $searchLabel }}</label>
+                <input id="report-search" type="search" name="search" value="{{ request('search') }}" class="bb-input" placeholder="{{ $searchLabel }}">
+            </div>
         @endif
         @if(in_array($reportType, ['stock','products'], true))
-            <select name="category" class="bb-input">
-                <option value="">Semua kategori</option>
-                @foreach($categories as $category)
-                    <option value="{{ $category->id_category }}" @selected(request('category') == $category->id_category)>{{ $category->nama_kategori }}</option>
-                @endforeach
-            </select>
+            <div class="bb-filter-field">
+                <label for="report-category-filter" class="bb-form-label">Kategori</label>
+                <select id="report-category-filter" name="category" class="bb-input">
+                    <option value="">Semua kategori</option>
+                    @foreach($categories as $category)
+                        <option value="{{ $category->id_category }}" @selected(request('category') == $category->id_category)>{{ $category->nama_kategori }}</option>
+                    @endforeach
+                </select>
+            </div>
         @endif
         @if($reportType === 'transactions')
-            <select name="payment_status" class="bb-input">
-                <option value="">Semua status pembayaran</option>
-                @foreach(['pending' => 'Belum dibayar', 'verified' => 'Terverifikasi', 'rejected' => 'Ditolak'] as $value => $label)
-                    <option value="{{ $value }}" @selected(request('payment_status') === $value)>{{ $label }}</option>
-                @endforeach
-            </select>
-            <select name="status" class="bb-input">
-                <option value="">Semua status pesanan</option>
-                @foreach(['pending', 'confirmed', 'processing', 'ready', 'completed', 'cancelled'] as $status)
-                    <option value="{{ $status }}" @selected(request('status') === $status)>{{ ucfirst($status) }}</option>
-                @endforeach
-            </select>
+            <div class="bb-filter-field">
+                <label for="report-payment-status" class="bb-form-label">Status pembayaran</label>
+                <select id="report-payment-status" name="payment_status" class="bb-input">
+                    <option value="">Semua status pembayaran</option>
+                    @foreach(['pending' => 'Belum dibayar', 'verified' => 'Terverifikasi', 'rejected' => 'Ditolak'] as $value => $label)
+                        <option value="{{ $value }}" @selected(request('payment_status') === $value)>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="bb-filter-field">
+                <label for="report-order-status" class="bb-form-label">Status pesanan</label>
+                <select id="report-order-status" name="status" class="bb-input">
+                    <option value="">Semua status pesanan</option>
+                    @foreach(['pending', 'confirmed', 'processing', 'ready', 'completed', 'cancelled'] as $status)
+                        <option value="{{ $status }}" @selected(request('status') === $status)>{{ ucfirst($status) }}</option>
+                    @endforeach
+                </select>
+            </div>
         @endif
         <button type="submit" class="btn-bb btn-bb-primary btn-bb-sm">Terapkan Filter</button>
         <a href="{{ route('admin.reports.'. $reportType) }}" class="btn-bb btn-bb-outline btn-bb-sm">Reset</a>

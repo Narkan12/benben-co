@@ -60,6 +60,15 @@
                     <p class="section-sub mb-2"><i class="bi bi-credit-card me-1"></i> {{ $paymentMethodLabels[$order->payment_method] ?? 'Belum ditentukan' }}</p>
                     <p class="section-sub mb-2"><i class="bi bi-shield-check me-1"></i> {{ $paymentLabels[$order->payment_status] ?? 'Belum tersedia' }}</p>
                     <p class="section-sub mb-0"><i class="bi bi-truck me-1"></i> {{ $order->delivery_method === 'delivery' ? 'Diantar ke alamat' : 'Ambil di toko' }}</p>
+                    @if(in_array($order->payment_method, ['transfer', 'ewallet'], true) && $order->payment_status !== 'verified' && $order->status !== 'cancelled')
+                        <div class="bb-payment-info-panel mt-3">
+                            <h3>Instruksi pembayaran</h3>
+                            @include('customer.partials.payment-instructions', [
+                                'paymentMethod' => $order->payment_method,
+                                'paymentDetails' => $paymentDetails,
+                            ])
+                        </div>
+                    @endif
                     @if($order->status === 'pending' && $order->payment_status === 'pending' && $order->payment_method !== 'cash')
                         <form method="POST" action="{{ route('customer.order.payment-proof', $order->id_order) }}" enctype="multipart/form-data" class="mt-3">
                             @csrf

@@ -5,7 +5,6 @@
 @section('content')
     <div class="bb-dash-topbar">
         <div>
-            <span class="eyebrow">Admin Panel</span>
             <h2 class="section-title" style="font-size:1.6rem;">Pengaturan Akun</h2>
         </div>
     </div>
@@ -28,6 +27,7 @@
                 <div class="col-md-6">
                     <label for="new-password" class="bb-form-label">Kata Sandi Baru</label>
                     <input id="new-password" type="password" name="password" class="bb-input @error('password') is-invalid @enderror" minlength="8" autocomplete="new-password">
+                    <small class="form-text">Kosongkan jika tidak ingin mengganti kata sandi; jika diisi, minimal 8 karakter.</small>
                 </div>
                 <div class="col-md-6">
                     <label for="new-password-confirmation" class="bb-form-label">Ulangi Kata Sandi Baru</label>
@@ -37,4 +37,5 @@
             <button type="submit" class="btn-bb btn-bb-primary mt-4">Simpan Pengaturan</button>
         </form>
     </div>
+
 @endsection

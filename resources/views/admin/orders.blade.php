@@ -6,19 +6,24 @@
 
     <div class="bb-dash-topbar">
         <div>
-            <span class="eyebrow">Admin Panel</span>
             <h2 class="section-title" style="font-size:1.6rem;">Kelola Pesanan</h2>
         </div>
     </div>
 
     <form method="GET" class="bb-filter-bar">
-        <input type="search" name="search" class="bb-input" value="{{ request('search') }}" placeholder="Cari nomor pesanan/pelanggan">
-        <select name="status" class="bb-input" style="width:auto;">
-            <option value="">Semua Status</option>
-            @foreach(['pending' => 'Menunggu', 'confirmed' => 'Dikonfirmasi', 'processing' => 'Diproses', 'ready' => 'Siap Diambil', 'completed' => 'Selesai', 'cancelled' => 'Dibatalkan'] as $value => $label)
-                <option value="{{ $value }}" @selected(request('status') === $value)>{{ $label }}</option>
-            @endforeach
-        </select>
+        <div class="bb-filter-field">
+            <label for="order-search" class="bb-form-label">Cari nomor pesanan atau pelanggan</label>
+            <input id="order-search" type="search" name="search" class="bb-input" value="{{ request('search') }}" placeholder="Nomor pesanan atau nama pelanggan">
+        </div>
+        <div class="bb-filter-field">
+            <label for="order-status-filter" class="bb-form-label">Status pesanan</label>
+            <select id="order-status-filter" name="status" class="bb-input">
+                <option value="">Semua Status</option>
+                @foreach(['pending' => 'Menunggu', 'confirmed' => 'Dikonfirmasi', 'processing' => 'Diproses', 'ready' => 'Siap Diambil', 'completed' => 'Selesai', 'cancelled' => 'Dibatalkan'] as $value => $label)
+                    <option value="{{ $value }}" @selected(request('status') === $value)>{{ $label }}</option>
+                @endforeach
+            </select>
+        </div>
         <button type="submit" class="btn-bb btn-bb-outline btn-bb-sm">Filter</button>
         @if(request()->hasAny(['search', 'status']))<a href="{{ route('admin.orders') }}" class="btn-bb btn-bb-outline btn-bb-sm">Reset</a>@endif
     </form>

@@ -5,7 +5,6 @@
 @section('content')
     <div class="bb-dash-topbar">
         <div>
-            <span class="eyebrow">Admin Panel</span>
             <h2 class="section-title" style="font-size:1.6rem;">Laporan Penjualan</h2>
         </div>
         <div class="bb-report-actions d-flex flex-wrap gap-2">
@@ -28,10 +27,14 @@
     </div>
 
     <form method="GET" class="bb-filter-bar">
-        <label for="start-date" class="bb-form-label mb-0">Dari</label>
-        <input id="start-date" type="date" name="start_date" value="{{ $startDate }}" class="bb-input" required>
-        <label for="end-date" class="bb-form-label mb-0">Sampai</label>
-        <input id="end-date" type="date" name="end_date" value="{{ $endDate }}" class="bb-input" required>
+        <div class="bb-filter-field">
+            <label for="start-date" class="bb-form-label">Dari tanggal</label>
+            <input id="start-date" type="date" name="start_date" value="{{ $startDate }}" class="bb-input" required>
+        </div>
+        <div class="bb-filter-field">
+            <label for="end-date" class="bb-form-label">Sampai tanggal</label>
+            <input id="end-date" type="date" name="end_date" value="{{ $endDate }}" class="bb-input" required>
+        </div>
         <button type="submit" class="btn-bb btn-bb-primary btn-bb-sm">Tampilkan</button>
     </form>
 

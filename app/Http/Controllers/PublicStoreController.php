@@ -77,13 +77,6 @@ class PublicStoreController extends Controller
             ->orderBy('tanggal_berakhir')
             ->get();
 
-        $galleryImages = [
-            ['path' => $imagePath('gallery_cheese_roll'), 'label' => 'Cheese roll'],
-            ['path' => $imagePath('gallery_brownies'), 'label' => 'Brownies panggang'],
-            ['path' => $imagePath('gallery_brownies_lumer'), 'label' => 'Brownies lumer'],
-            ['path' => $imagePath('gallery_bolen_pisang'), 'label' => 'Bolen pisang'],
-            ['path' => $imagePath('gallery_yoghurt'), 'label' => 'Yoghurt'],
-        ];
         $heroImage = $homeContent?->image_path ?: $imagePath('hero');
         $storyImage = $imagePath('story_home');
 
@@ -92,13 +85,27 @@ class PublicStoreController extends Controller
             'categoryHighlights',
             'reviews',
             'promos',
-            'galleryImages',
             'heroImage',
             'storyImage',
             'homeContent',
             'favoritesContent',
             'promotionContent'
         ));
+    }
+
+    public function gallery()
+    {
+        $profileImages = CompanyProfileImage::query()->get()->keyBy('image_key');
+        $imagePath = fn (string $key): string => $profileImages->get($key)?->currentPath() ?? 'images/logo.png';
+        $galleryImages = [
+            ['path' => $imagePath('gallery_cheese_roll'), 'label' => 'Cheese roll'],
+            ['path' => $imagePath('gallery_brownies'), 'label' => 'Brownies panggang'],
+            ['path' => $imagePath('gallery_brownies_lumer'), 'label' => 'Brownies lumer'],
+            ['path' => $imagePath('gallery_bolen_pisang'), 'label' => 'Bolen pisang'],
+            ['path' => $imagePath('gallery_yoghurt'), 'label' => 'Yoghurt'],
+        ];
+
+        return view('gallery', compact('galleryImages'));
     }
 
     public function about()

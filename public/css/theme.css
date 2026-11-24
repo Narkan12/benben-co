@@ -124,14 +124,16 @@ body,
 }
 
 .bb-theme-toggle {
-  display: inline-grid;
-  width: 38px;
+  display: inline-flex;
+  width: auto;
   height: 38px;
-  flex: 0 0 38px;
-  place-items: center;
-  padding: 0;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 10px;
   border: 1px solid var(--bb-theme-border);
-  border-radius: 50%;
+  border-radius: 999px;
   color: var(--bb-theme-text);
   background: var(--bb-theme-surface);
   cursor: pointer;
@@ -152,6 +154,12 @@ body,
 
 .bb-theme-toggle i {
   font-size: .92rem;
+}
+
+.bb-theme-toggle-label {
+  font-size: .72rem;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 html[data-theme="dark"] .bb-navbar.is-scrolled {
@@ -274,6 +282,10 @@ html[data-theme="dark"] .profile-tech-tags span,
 html[data-theme="dark"] .profile-roadmap-item > b,
 html[data-theme="dark"] .bb-form-label {
   color: var(--bb-theme-text);
+}
+
+html[data-theme="dark"] .bb-required-indicator {
+  color: #ff9b91;
 }
 
 html[data-theme="dark"] .section-sub,
@@ -781,6 +793,33 @@ html[data-theme="dark"] .bb-admin-shell .bb-stat-card {
   color: var(--bb-theme-text);
   background: var(--bb-theme-surface);
   box-shadow: 0 8px 24px -18px rgba(0, 0, 0, .7);
+}
+
+html[data-theme="dark"] .bb-store-settings-hero,
+html[data-theme="dark"] .bb-bank-account-card,
+html[data-theme="dark"] .bb-qris-current,
+html[data-theme="dark"] .bb-delivery-fee-note {
+  border-color: var(--bb-theme-border);
+  color: var(--bb-theme-text);
+  background: var(--bb-theme-surface);
+}
+
+html[data-theme="dark"] .bb-store-settings-hero h3,
+html[data-theme="dark"] .bb-store-settings-section-heading h3,
+html[data-theme="dark"] .bb-bank-account-card-heading,
+html[data-theme="dark"] .bb-store-settings-footer>span,
+html[data-theme="dark"] .bb-store-settings-hint {
+  color: var(--bb-theme-text);
+}
+
+html[data-theme="dark"] .bb-store-settings-hero p,
+html[data-theme="dark"] .bb-store-settings-section-heading p {
+  color: var(--bb-theme-muted);
+}
+
+html[data-theme="dark"] .bb-store-settings-section+.bb-store-settings-section,
+html[data-theme="dark"] .bb-store-settings-footer {
+  border-color: var(--bb-theme-border);
 }
 
 html[data-theme="dark"] .bb-admin-shell .bb-stat-card .ic {

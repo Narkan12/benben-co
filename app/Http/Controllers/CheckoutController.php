@@ -10,6 +10,7 @@ use App\Models\OrderStatusHistory;
 use App\Models\Product;
 use App\Models\Promotion;
 use App\Models\StockLog;
+use App\Models\StoreSetting;
 use App\Services\WhatsAppCloudApi;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
@@ -24,6 +25,7 @@ class CheckoutController extends Controller
 {
     public function index()
     {
+        $paymentSettings = StoreSetting::current();
         $cart = session('cart', []);
 
         if (empty($cart)) {
@@ -58,7 +60,8 @@ class CheckoutController extends Controller
         return view('checkout', [
             'items' => $items,
             'subtotal' => $subtotal,
-            'delivery' => 15000,
+            'delivery' => $paymentSettings->delivery_fee,
+            'paymentSettings' => $paymentSettings,
             'customer' => auth()->user()?->customer,
             'checkoutToken' => (string) Str::uuid(),
         ]);
@@ -116,7 +119,8 @@ class CheckoutController extends Controller
             ? round(($subtotal * $promotion->nilai_diskon) / 100, 2)
             : (float) $promotion->nilai_diskon;
         $discount = min($discount, $subtotal);
-        $delivery = $data['delivery_method'] === 'delivery' ? 15000 : 0;
+        $deliveryFee = StoreSetting::current()->delivery_fee;
+        $delivery = $data['delivery_method'] === 'delivery' ? $deliveryFee : 0;
 
         return response()->json([
             'promo_code' => $promotion->kode_promo,
@@ -165,6 +169,7 @@ class CheckoutController extends Controller
         ]);
 
         $cart = session('cart', []);
+        $paymentSettings = StoreSetting::current();
 
         if (empty($cart)) {
             return redirect()->route('cart')->with('error', 'Keranjang masih kosong.');
@@ -177,7 +182,7 @@ class CheckoutController extends Controller
             : null;
 
         try {
-            $order = DB::transaction(function () use ($request, $cart, $promoCode, $proofPath, $checkoutToken) {
+            $order = DB::transaction(function () use ($request, $cart, $promoCode, $proofPath, $checkoutToken, $paymentSettings) {
                 $promo = null;
                 if ($promoCode !== '') {
                     $promo = Promotion::query()
@@ -260,7 +265,7 @@ class CheckoutController extends Controller
                     ]);
                 }
 
-                $delivery = $request->delivery_method === 'delivery' ? 15000 : 0;
+                $delivery = $request->delivery_method === 'delivery' ? $paymentSettings->delivery_fee : 0;
                 $total = max(0, $subtotal - $discount + $delivery);
 
                 $order = Order::query()->create([
@@ -274,6 +279,7 @@ class CheckoutController extends Controller
                     'total' => $total,
                     'status' => 'pending',
                     'payment_method' => $request->payment_method,
+                    'payment_details' => $paymentSettings->paymentInstructions($request->payment_method),
                     'payment_status' => 'pending',
                     'payment_proof' => $proofPath,
                     'delivery_method' => $request->delivery_method,

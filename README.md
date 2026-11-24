@@ -8,13 +8,14 @@ Kode sengaja memakai struktur Laravel standar dan logika langsung di controller 
 
 ## 2. Teknologi
 
-- Laravel 12 dan PHP 8.3+
-- Ekstensi PHP `pdo_mysql`; `zip` untuk ekspor XLSX
-- MySQL
+- Laravel 12 dan PHP 8.2+
+- MySQL atau SQLite (ekstensi `pdo_mysql` untuk MySQL)
+- Ekstensi `zip` untuk ekspor XLSX
 - Blade dan Eloquent ORM
 - Bootstrap 5 melalui CDN
 - CSS tambahan di `public/css/`
 - JavaScript Vanilla di `public/js/`
+- Laravel Socialite untuk Google OAuth opsional dan TCPDF untuk ekspor PDF
 
 ## 3. Struktur Folder
 
@@ -324,22 +325,30 @@ Siapkan PHP 8.3+, Composer, dan MySQL.
 
 4. Buat database MySQL `benben_bakery`.
 5. Buat application key: `php artisan key:generate`
-6. Buat tabel dan data contoh: `php artisan migrate --seed`
+6. Buat tabel dan data demo (hanya pada lingkungan `local`/`testing`): `php artisan migrate --seed`
 7. Saat hosting, arahkan document root web server ke folder `public` Laravel dan pastikan folder `storage/app/public` ikut diunggah bersama aplikasi. Beri PHP izin baca ke gambar dan izin tulis pada `storage/app/public/products` untuk upload admin. Gambar statis tersedia di `storage/app/public/images`. Aplikasi menyajikan gambar melalui `StorageImageController`, jadi tidak memerlukan `php artisan storage:link`.
 8. Jalankan `php artisan serve`, lalu buka URL yang ditampilkan (umumnya `http://127.0.0.1:8000`).
 
-`php artisan migrate:fresh --seed` menghapus semua tabel dan datanya terlebih dahulu. Jalankan hanya pada database belajar yang boleh dihapus.
+Seeder demo tidak berjalan pada production secara default. Untuk deployment demonstrasi yang memakai database khusus, aktifkan `BENBEN_DEMO_SEED_ENABLED=true` secara sengaja lalu jalankan `php artisan db:seed`; jangan aktifkan pada database produksi berisi data operasional. Seeder tidak menjalankan `migrate:fresh` atau menghapus tabel.
 
 ## 15. Akun Demo
 
-Buka `/admin/login`, lalu masukkan username email berikut.
+Seeder `DatabaseSeeder` pada lingkungan `local`/`testing` membuat akun berikut. Admin/kasir masuk melalui `/admin/login`; pelanggan melalui `/login`. Akun pelanggan dapat memakai username atau email.
 
-| Role | Username | Password |
-| --- | --- | --- |
-| Admin | `admin@example.com` | `admin123` |
-| Kasir | `kasir@example.com` | `kasir123` |
+| Role | Username | Email | Password |
+| --- | --- | --- | --- |
+| Admin | `admin@example.com` | `admin@example.com` | `admin123` |
+| Kasir | `kasir@example.com` | `kasir@example.com` | `kasir123` |
+| Pelanggan | `nabila.putri` | `nabila.putri@example.com` | `BenbenPelanggan!2025` |
+| Pelanggan | `rizky.ramadhan` | `rizky.ramadhan@example.com` | `BenbenPelanggan!2025` |
+| Pelanggan | `siti.aulia` | `siti.aulia@example.com` | `BenbenPelanggan!2025` |
+| Pelanggan | `fajar.maulana` | `fajar.maulana@example.com` | `BenbenPelanggan!2025` |
+| Pelanggan | `dinda.maharani` | `dinda.maharani@example.com` | `BenbenPelanggan!2025` |
+| Pelanggan | `rafi.akbar` | `rafi.akbar@example.com` | `BenbenPelanggan!2025` |
 
-Akun ini dibuat oleh `DatabaseSeeder`. Ganti password sebelum aplikasi dipakai di luar komputer belajar.
+Password di-hash Laravel sebelum disimpan. Gunakan hanya untuk demonstrasi dan ganti jika akun akan dipakai pada lingkungan bersama.
+
+Lihat alur presentasi, skenario transaksi, dan checklist di [Panduan Demo BENBEN CO.](docs/PANDUAN_DEMO_BENBEN_CO.md).
 
 ## 16. Cara Refactor
 
@@ -431,7 +440,7 @@ Ikuti alur route → controller → model → view. Jika mengubah satu fitur, te
 - Migration: `database/migrations/`
 - Model/relasi: `app/Models/`
 - Kategori dan produk: `database/seeders/ProductSeeder.php`
-- Akun dan promo: `database/seeders/DatabaseSeeder.php`
+- Akun, pelanggan, promo, pesanan, ulasan, aktivitas, dan konten halaman demo: `database/seeders/DemoAdminPanelSeeder.php`, yang dipanggil melalui `DatabaseSeeder.php` sesuai konfigurasi lingkungan
 
 ## Pemeriksaan Dasar
 
@@ -612,89 +621,19 @@ Halaman depan mempertahankan identitas editorial bakery, menampilkan tombol masu
 
 ### Cetak struk POS
 
-Struk sekarang menyediakan pilihan printer thermal 58 mm atau 80 mm. Saat tombol cetak dipilih, `public/js/receipt.js` menunggu font siap, mengukur tinggi konten pada lebar kertas terpilih, membuat aturan ukuran halaman fisik yang sesuai, lalu mencetak hanya area struk. Event `beforeprint` juga menyiapkan ukuran jika dialog print dibuka lewat pintasan browser. Halaman induk, sidebar, navigasi, tombol, dan toast disembunyikan; tinggi halaman mengikuti jumlah item dan tidak memakai tinggi kertas A4 atau batas tinggi tetap.
+Struk transaksi POS memakai identitas `BENBEN CO.`, alamat lengkap `Komp. Sinergi Antapani, Jl. Nyaman No.33B, Antapani Tengah, Kec. Antapani, Kota Bandung 40291`, dengan layout sederhana tanpa dekorasi berlebihan. Tata letaknya horizontal pada layar: panel ukuran kertas dan pencetakan berada di sisi kiri, sedangkan pratinjau struk berada di sisi kanan. Pada layar kecil, panel berubah menjadi susunan vertikal agar tidak ada scroll horizontal.
 
-Penyebab utama ukuran cetak lama adalah deklarasi `@page size: 80mm auto`: menurut sintaks CSS paged media, `auto` hanya berlaku sebagai nilai tunggal dan tidak dapat menjadi tinggi setelah lebar eksplisit, sehingga ukuran halaman tidak diterapkan secara andal dan browser/printer dapat memakai ukuran kertas default. Ukuran halaman kini dihasilkan sebagai dua dimensi valid (lebar pilihan dan tinggi hasil pengukuran).
+Struk menyediakan pilihan printer thermal 58 mm atau 80 mm. Saat tombol cetak dipilih, `public/js/receipt.js` menunggu font siap, mengukur tinggi konten pada lebar kertas terpilih, membuat aturan `@page` dengan lebar dan tinggi fisik yang sesuai, lalu mencetak hanya area struk. Event `beforeprint` menyiapkan ukuran jika dialog cetak dibuka lewat pintasan browser; `afterprint` mengembalikan keadaan tampilan website. Nama produk panjang menggunakan pemenggalan aman, sedangkan harga, subtotal, total, uang diterima, dan kembalian tetap berada dalam kolom sejajar.
 
-### File dan pemeriksaan
+CSS receipt menggunakan `@media print`, `@page`, `-webkit-print-color-adjust: exact`, dan `print-color-adjust: exact`. Warna tetap diusahakan tampil, tetapi hasil cetak bergantung pada mode warna, dukungan browser, dan driver printer. Pada cetak Windows/Chrome/Edge, tanggal, jam, URL, dan nomor halaman bawaan browser hanya dapat dinonaktifkan dari dialog cetak. Pilih printer/print preview yang benar, buka pengaturan **More settings**, lalu nonaktifkan **Headers and footers**. CSS tidak dapat menjamin penghapusan bawaan browser secara mutlak.
 
-Perubahan pada bagian ini mencakup `app/Http/Middleware/CustomerOnly.php`, `routes/web.php`, `app/Http/Controllers/PublicStoreController.php`, `resources/views/components/navbar.blade.php`, `resources/views/home.blade.php`, `resources/views/about.blade.php`, `resources/views/admin/dashboard.blade.php`, `resources/views/customer/dashboard.blade.php`, `resources/views/layouts/admin.blade.php`, `resources/views/layouts/customer.blade.php`, `resources/views/pos/receipt.blade.php`, `public/css/app.css`, `public/css/admin.css`, `public/css/responsive.css`, `public/js/app.js`, `public/js/receipt.js`, serta tes fitur admin/customer.
+Halaman induk, sidebar, navigasi, tombol, panel pengaturan, dan toast disembunyikan saat mode cetak. Struk hanya menampilkan identitas toko, nomor transaksi, tanggal dari database, kasir, nama dan jumlah produk, harga satuan, subtotal, diskon, total, metode/status pembayaran, serta uang tunai yang diterima dan kembalian bila tersedia.
 
-Kartu ringkasan dashboard admin memakai nilai dari database dan dapat dibuka untuk menuju halaman pengelolaan produk, pesanan, laporan, pembayaran, atau persediaan yang sesuai. Dashboard customer menonjolkan status dan akses langsung ke riwayat serta akun. Company profile mempertahankan logo, warna bakery, dan aset gambar yang telah digunakan.
+Pengujian manual:
 
-Perintah pemeriksaan:
-
-```bash
-php vendor/bin/phpunit
-php artisan route:list
-php artisan view:cache
-php artisan view:clear
-php -l app/Http/Middleware/CustomerOnly.php
-php -l routes/web.php
-node --check public/js/app.js
-node --check public/js/receipt.js
-```
-
-Tes fitur memverifikasi redirect guest pada URL transaksi, pemulihan URL tujuan setelah login, isolasi cart antar-customer, akses dashboard admin/customer, pembatasan pesanan customer lain, serta rendering struk transaksi pendek dan panjang (termasuk seluruh item bernama panjang). Pada pemeriksaan terakhir, `php vendor\bin\phpunit` lulus dengan **41 tes dan 319 assertions**. `php artisan route:list`, `php artisan view:cache`/`view:clear`, pemeriksaan sintaks PHP dan JavaScript lulus. Server lokal merespons HTTP 200; beranda dan modal promo diperiksa di browser, dan modal tidak lagi memiliki scroll horizontal yang tidak diperlukan.
-
-Cetak fisik dan print preview pada printer thermal tetap perlu dicoba manual karena ukuran maksimum halaman dan skala dapat berbeda menurut driver. Pilih lebar yang sama dengan roll (58 mm atau 80 mm), gunakan transaksi pendek dan panjang, dan pastikan nama produk, harga, total, pembayaran, serta kembalian tidak terpotong.
-
-## 11. Google OAuth Login dan Register
-
-Project memakai Laravel Socialite untuk Google OAuth. Kredensial dibaca dari environment dan tidak ditulis pada source code:
-
-```dotenv
-GOOGLE_CLIENT_ID=
-GOOGLE_CLIENT_SECRET=
-GOOGLE_REDIRECT_URI=http://127.0.0.1:8000/auth/google/callback
-```
-
-Tambahkan redirect URI tersebut pada Google Cloud Console → Credentials → Authorized redirect URIs. Untuk deployment ubah `APP_URL` dan `GOOGLE_REDIRECT_URI` sesuai domain production dengan HTTPS, lalu jalankan `php artisan config:clear`.
-
-- `/login` menyediakan tombol **Continue with Google** untuk customer.
-- `/register` menyediakan tombol **Sign up with Google** untuk customer baru atau akun customer lama yang sudah terhubung.
-- `/admin/login` menyediakan tombol **Sign in with Google** hanya untuk akun yang sudah memiliki role `admin` atau `kasir`.
-
-Tidak ada proses yang membuat role admin secara otomatis. Customer baru Google dibuat dengan role `customer` dan profil customer yang terhubung. Jika email sudah terdaftar, pengaitan Google tidak dilakukan otomatis: pengguna harus login sekali dengan username/email dan password agar pengaitan dilakukan setelah autentikasi password berhasil.
-
-Google OAuth membutuhkan email valid dan terverifikasi. Callback menangani pembatalan atau kegagalan OAuth dengan pesan yang aman. Jalankan migration dan bersihkan cache setelah perubahan:
-
-```bash
-php artisan migrate
-php artisan config:clear
-php artisan route:clear
-```
-
-Google Login belum dinyatakan berhasil sampai kredensial Google Cloud dan Authorized redirect URI dikonfirmasi serta pengujian browser berhasil dilakukan.
-
-## 22. Google Account Seeder, Logout Modal, dan Pembatasan Route
-
-### Seeder akun Google dummy
-
-Gunakan seeder khusus untuk membuat akun pengujian Google tanpa menimpa akun yang sudah ada:
-
-```bash
-php artisan db:seed --class=Database\\Seeders\\GoogleUserSeeder
-```
-
-Seeder membuat dua contoh akun pengujian yang memakai kolom `google_id`:
-
-- `google.customer.demo@example.com`, role `customer`, terhubung ke profil `customers`.
-- `google.admin.demo@example.com`, role `admin`, tanpa akses profil customer.
-
-Seeder tidak menyimpan password Google dan hanya menjalankan `firstOrCreate()` berdasarkan `google_id`. Akun Google nyata tetap dibuat melalui callback OAuth. Jangan menjalankan `migrate:fresh` atau menghapus data pengguna untuk pengujian.
-
-### Logout
-
-Logout Admin dan Customer memakai satu mekanisme Laravel `POST` dengan CSRF. Modal **Konfirmasi Logout** tersedia pada sidebar Admin, sidebar Customer, dan footer public untuk customer yang login. Pilihan Batal hanya menutup modal. Pilihan Ya, Logout memanggil `AuthController::logout()`, menutup session aktif, menghapus session Laravel, dan meregenerasi CSRF token. Relasi `google_id`, profil, pesanan, dan akun tidak dihapus saat logout.
-
-Middleware `prevent-back-cache` menambahkan header anti-cache pada route cart, checkout, dashboard customer, dan seluruh route internal admin sehingga tombol Back tidak menampilkan halaman internal dari cache browser.
-
-### Pembatasan route
-
-- Route `/customer/**` dilindungi `CustomerOnly` dan hanya menerima role `customer`.
-- Route `/admin/**` dilindungi `AdminOnly` dan hanya menerima role `admin` atau `kasir`.
-- Route pesanan customer memfilter `customer_id` dari akun login sebelum `findOrFail()`, sehingga customer tidak dapat melihat pesanan milik customer lain.
-- Guest diarahkan ke `/login` atau `/admin/login` sesuai route yang dibuka.
-- Customer yang membuka URL admin ditolak oleh middleware AdminOnly.
-- Google tidak dapat mengubah role pengguna atau membuat role admin secara otomatis.
+1. Buka `/admin/pos`, login sebagai admin/kasir, lalu buat transaksi dengan beberapa produk.
+2. Buka halaman struk hasil transaksi dan pastikan alamat lengkap toko tampil: `Komp. Sinergi Antapani, Jl. Nyaman No.33B, Antapani Tengah, Kec. Antapani, Kota Bandung 40291`.
+3. Uji pilihan 58 mm dan 80 mm serta gunakan nama produk panjang.
+4. Buka Windows Print, nonaktifkan **Headers and footers**, dan cek bahwa hanya struk yang tercetak.
+5. Pastikan tidak ada halaman kosong tambahan, teks terpotong, warna tidak terbaca, atau angka keluar dari batas kertas.
+6. Bandingkan subtotal, diskon, total, uang diterima, dan kembalian dengan data transaksi; pencetakan ulang tidak boleh membuat pesanan baru.

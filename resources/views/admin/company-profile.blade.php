@@ -26,7 +26,7 @@
                     <form method="POST" action="{{ route('admin.company-profile.images.update', $image->image_key) }}" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
-                        <label for="image-{{ $image->image_key }}" class="bb-form-label">Pilih gambar baru</label>
+                        <label for="image-{{ $image->image_key }}" class="bb-form-label">Gambar baru: {{ $image->label }}</label>
                         <input id="image-{{ $image->image_key }}" type="file" name="gambar" class="bb-input mb-2"
                                accept="image/jpeg,image/png,image/webp" required>
                         <small class="d-block text-muted mb-3">JPG, PNG, atau WEBP; maksimal 5 MB.</small>

@@ -15,7 +15,6 @@
 
     <div class="bb-dash-topbar">
         <div>
-            <span class="eyebrow">Admin Panel</span>
             <h2 class="section-title" style="font-size:1.6rem;">Riwayat Aktivitas</h2>
         </div>
     </div>
@@ -41,27 +40,45 @@
     </div>
 
     <form method="GET" class="bb-filter-bar">
-        <input type="search" name="search" value="{{ request('search') }}" class="bb-input" placeholder="Cari nama atau email..." style="max-width:220px;">
-        <select name="type" class="bb-input">
-            <option value="">Semua aktivitas</option>
-            @foreach($activityTypes as $type)
-                <option value="{{ $type }}" {{ request('type') === $type ? 'selected' : '' }}>{{ $type }}</option>
-            @endforeach
-        </select>
-        <select name="role" class="bb-input">
-            <option value="">Semua role</option>
-            <option value="admin" {{ request('role') === 'admin' ? 'selected' : '' }}>Admin</option>
-            <option value="kasir" {{ request('role') === 'kasir' ? 'selected' : '' }}>Kasir</option>
-            <option value="customer" {{ request('role') === 'customer' ? 'selected' : '' }}>Pelanggan</option>
-        </select>
-        <select name="status" class="bb-input">
-            <option value="">Semua status</option>
-            @foreach($statusMap as $key => $label)
-                <option value="{{ $key }}" {{ request('status') === $key ? 'selected' : '' }}>{{ $label }}</option>
-            @endforeach
-        </select>
-        <input type="date" name="start_date" value="{{ request('start_date') }}" class="bb-input">
-        <input type="date" name="end_date" value="{{ request('end_date') }}" class="bb-input">
+        <div class="bb-filter-field">
+            <label for="activity-search" class="bb-form-label">Cari pengguna atau email</label>
+            <input id="activity-search" type="search" name="search" value="{{ request('search') }}" class="bb-input" placeholder="Nama atau email">
+        </div>
+        <div class="bb-filter-field">
+            <label for="activity-type" class="bb-form-label">Jenis aktivitas</label>
+            <select id="activity-type" name="type" class="bb-input">
+                <option value="">Semua aktivitas</option>
+                @foreach($activityTypes as $type)
+                    <option value="{{ $type }}" {{ request('type') === $type ? 'selected' : '' }}>{{ $type }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="bb-filter-field">
+            <label for="activity-role" class="bb-form-label">Role pengguna</label>
+            <select id="activity-role" name="role" class="bb-input">
+                <option value="">Semua role</option>
+                <option value="admin" {{ request('role') === 'admin' ? 'selected' : '' }}>Admin</option>
+                <option value="kasir" {{ request('role') === 'kasir' ? 'selected' : '' }}>Kasir</option>
+                <option value="customer" {{ request('role') === 'customer' ? 'selected' : '' }}>Pelanggan</option>
+            </select>
+        </div>
+        <div class="bb-filter-field">
+            <label for="activity-status" class="bb-form-label">Status sesi</label>
+            <select id="activity-status" name="status" class="bb-input">
+                <option value="">Semua status</option>
+                @foreach($statusMap as $key => $label)
+                    <option value="{{ $key }}" {{ request('status') === $key ? 'selected' : '' }}>{{ $label }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="bb-filter-field">
+            <label for="activity-start-date" class="bb-form-label">Dari tanggal</label>
+            <input id="activity-start-date" type="date" name="start_date" value="{{ request('start_date') }}" class="bb-input">
+        </div>
+        <div class="bb-filter-field">
+            <label for="activity-end-date" class="bb-form-label">Sampai tanggal</label>
+            <input id="activity-end-date" type="date" name="end_date" value="{{ request('end_date') }}" class="bb-input">
+        </div>
         <button type="submit" class="btn-bb btn-bb-primary btn-bb-sm">Terapkan Filter</button>
         <a href="{{ route('admin.history') }}" class="btn-bb btn-bb-outline btn-bb-sm">Reset</a>
     </form>

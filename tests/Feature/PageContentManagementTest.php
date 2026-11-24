@@ -56,6 +56,21 @@ class PageContentManagementTest extends TestCase
         $this->assertSame('published', PageContent::query()->where('page_key', 'contact')->value('status'));
     }
 
+    public function test_gallery_is_a_separate_page_and_active_nav_item(): void
+    {
+        $this->get(route('gallery'))
+            ->assertOk()
+            ->assertSee('profile-gallery-grid', false)
+            ->assertSee('href="'.route('gallery').'"', false)
+            ->assertSee('class="active">Gallery', false);
+
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertDontSee('id="gallery"', false)
+            ->assertDontSee('profile-gallery-grid', false)
+            ->assertDontSee('#gallery');
+    }
+
     public function test_cashier_cannot_manage_cms_pages(): void
     {
         $cashier = $this->createUser('kasir');

@@ -11,6 +11,7 @@ use App\Models\OrderStatusHistory;
 use App\Models\Product;
 use App\Models\Promotion;
 use App\Models\Rating;
+use App\Models\StoreSetting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -51,6 +52,260 @@ class AdminDashboardFeaturesTest extends TestCase
             ->assertSee(route('admin.users.update', 2), false)
             ->assertSee('data-bs-target="#crud-delete-confirm-modal"', false)
             ->assertSee('data-crud-delete', false);
+    }
+
+    public function test_category_selects_have_visible_labels_on_admin_and_public_pages(): void
+    {
+        $admin = $this->createUser();
+
+        $this->actingAs($admin)
+            ->get(route('admin.products'))
+            ->assertOk()
+            ->assertSee('<label for="product-category-filter"', false)
+            ->assertSee('<label for="product-category"', false);
+
+        $this->actingAs($admin)
+            ->get(route('admin.reports.products'))
+            ->assertOk()
+            ->assertSee('<label for="report-category-filter"', false);
+
+        $this->get(route('products'))
+            ->assertOk()
+            ->assertSee('<label for="product-category"', false);
+    }
+
+    public function test_admin_can_manage_delivery_and_payment_settings(): void
+    {
+        $admin = $this->createUser();
+        Storage::fake('public');
+        $qrisImage = UploadedFile::fake()->createWithContent(
+            'benben-qris.jpg',
+            file_get_contents(public_path('images/hero.jpg')),
+        );
+
+        $this->actingAs($admin)
+            ->get(route('admin.settings'))
+            ->assertOk()
+            ->assertSee('Pengaturan Akun')
+            ->assertDontSee('Ongkos Kirim dan Informasi Pembayaran');
+
+        $this->get(route('admin.store-settings'))
+            ->assertOk()
+            ->assertSee('Pengaturan Toko')
+            ->assertSee('Rekening transfer bank')
+            ->assertSee('E-Wallet dan QRIS')
+            ->assertSee('Gambar QRIS / barcode')
+            ->assertSee('Tambah rekening')
+            ->assertSee('Bank BNI')
+            ->assertSee('Bank BRI');
+
+        $this->patch(route('admin.settings.payment.update'), [
+            'delivery_fee' => '22500',
+            'bank_accounts_present' => '1',
+            'bank_accounts' => [
+                [
+                    'bank_name' => 'Bank BNI',
+                    'account_number' => '1234567890',
+                    'account_name' => 'BENBEN CO',
+                ],
+                [
+                    'bank_name' => 'Bank BRI',
+                    'account_number' => '001234567890',
+                    'account_name' => 'BENBEN CO',
+                ],
+            ],
+            'ewallet_provider' => 'QRIS',
+            'ewallet_account_number' => '',
+            'ewallet_account_name' => 'BENBEN CO',
+            'qris_image' => $qrisImage,
+        ])->assertRedirect()
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('store_settings', [
+            'id' => 1,
+            'delivery_fee' => 22500,
+            'bank_account_number' => '1234567890',
+            'bank_account_name' => 'BENBEN CO',
+            'ewallet_provider' => 'QRIS',
+        ]);
+        $this->assertSame(
+            ['Bank BNI', 'Bank BRI'],
+            collect(StoreSetting::current()->bankAccounts())->pluck('bank_name')->all(),
+        );
+        Storage::disk('public')->assertExists(StoreSetting::current()->qris_image_path);
+        $this->get(route('media.show', ['path' => StoreSetting::current()->qris_image_path]))
+            ->assertOk();
+
+        $cashier = $this->createUser('kasir');
+        $this->actingAs($cashier)
+            ->get(route('admin.store-settings'))
+            ->assertForbidden();
+
+        $this->actingAs($cashier)
+            ->patch(route('admin.settings.payment.update'), [
+                'delivery_fee' => 0,
+            ])
+            ->assertForbidden();
+    }
+
+    public function test_checkout_uses_configured_delivery_fee_and_shows_payment_instructions(): void
+    {
+        $customer = $this->createCustomerUser();
+        $category = Category::query()->create(['nama_kategori' => 'Kue', 'slug' => 'kue-payment-instructions']);
+        $product = Product::query()->create([
+            'category_id' => $category->id_category,
+            'nama' => 'Kue Pembayaran',
+            'harga' => 30000,
+            'stok' => 5,
+            'status' => 'active',
+        ]);
+        StoreSetting::current()->update([
+            'delivery_fee' => 22500,
+            'bank_accounts' => [
+                [
+                    'bank_name' => 'Bank BNI',
+                    'account_number' => '1234567890',
+                    'account_name' => 'BENBEN CO',
+                ],
+                [
+                    'bank_name' => 'Bank BRI',
+                    'account_number' => '001234567890',
+                    'account_name' => 'BENBEN CO',
+                ],
+            ],
+            'ewallet_provider' => 'QRIS',
+            'ewallet_account_name' => 'BENBEN CO',
+            'qris_image_path' => 'payment-methods/qris.webp',
+        ]);
+        $this->createPromotion('FEE10', today()->toDateString(), today()->addDay()->toDateString());
+
+        $session = [
+            'cart' => [$product->id_product => ['qty' => 1]],
+            'cart_customer_id' => $customer->customer_id,
+        ];
+
+        $this->actingAs($customer)->withSession($session)
+            ->get(route('checkout'))
+            ->assertOk()
+            ->assertSee('Bank BNI')
+            ->assertSee('Bank BRI')
+            ->assertSee('1234567890')
+            ->assertSee('001234567890')
+            ->assertSee('payment-methods/qris.webp')
+            ->assertSee('E-Wallet / QRIS');
+
+        $this->withSession($session)
+            ->postJson(route('checkout.promo-preview'), [
+                'promo_code' => 'FEE10',
+                'delivery_method' => 'delivery',
+            ])
+            ->assertOk()
+            ->assertJsonPath('delivery', 22500);
+
+        $orderResponse = $this->withSession($session)
+            ->post(route('checkout.store'), [
+                'checkout_token' => (string) Str::uuid(),
+                'nama' => 'Pelanggan Tes',
+                'no_whatsapp' => '081234567890',
+                'alamat' => 'Jl. Bakery No. 1',
+                'payment_method' => 'transfer',
+                'delivery_method' => 'delivery',
+            ]);
+        $order = Order::query()->firstOrFail();
+
+        $orderResponse->assertRedirect(route('customer.order.proof', ['id' => $order->id_order]));
+        $this->assertSame(22500.0, (float) $order->delivery);
+        $this->assertSame(52500.0, (float) $order->total);
+        $this->assertSame('Bank BNI', $order->payment_details['bank_name']);
+        $this->assertCount(2, $order->payment_details['bank_accounts']);
+
+        $this->get(route('customer.order.detail', $order->id_order))
+            ->assertOk()
+            ->assertSee('Instruksi pembayaran')
+            ->assertSee('1234567890')
+            ->assertSee('BENBEN CO');
+
+        $ewalletResponse = $this->withSession($session)
+            ->post(route('checkout.store'), [
+                'checkout_token' => (string) Str::uuid(),
+                'nama' => 'Pelanggan Tes',
+                'no_whatsapp' => '081234567890',
+                'alamat' => '',
+                'payment_method' => 'ewallet',
+                'delivery_method' => 'pickup',
+            ]);
+        $ewalletOrder = Order::query()->where('payment_method', 'ewallet')->firstOrFail();
+
+        $ewalletResponse->assertRedirect(route('customer.order.proof', ['id' => $ewalletOrder->id_order]));
+        $this->assertSame('payment-methods/qris.webp', $ewalletOrder->payment_details['qris_image_path']);
+        $this->get(route('customer.order.detail', $ewalletOrder->id_order))
+            ->assertOk()
+            ->assertSee('Instruksi pembayaran')
+            ->assertSee('payment-methods/qris.webp')
+            ->assertSee('Pindai QR resmi BENBEN CO.');
+        $this->get(route('customer.order.proof', $ewalletOrder->id_order))
+            ->assertOk()
+            ->assertSee('payment-methods/qris.webp')
+            ->assertSee('Pindai QR resmi BENBEN CO.');
+
+        $this->withSession($session)
+            ->post(route('checkout.store'), [
+                'checkout_token' => (string) Str::uuid(),
+                'nama' => 'Pelanggan Tes',
+                'no_whatsapp' => '081234567890',
+                'alamat' => '',
+                'payment_method' => 'ewallet',
+                'delivery_method' => 'pickup',
+            ])
+            ->assertRedirect();
+        $ewalletOrder = Order::query()->where('payment_method', 'ewallet')->firstOrFail();
+
+        $this->assertSame('payment-methods/qris.webp', $ewalletOrder->payment_details['qris_image_path']);
+        $this->get(route('customer.order.detail', $ewalletOrder->id_order))
+            ->assertOk()
+            ->assertSee('Instruksi pembayaran')
+            ->assertSee('payment-methods/qris.webp')
+            ->assertSee('Pindai QR resmi BENBEN CO.');
+    }
+
+    public function test_admin_product_and_category_search_filters_results(): void
+    {
+        $admin = $this->createUser();
+        $brownies = Category::query()->create([
+            'nama_kategori' => 'Brownies',
+            'slug' => 'brownies-search',
+        ]);
+        $bread = Category::query()->create([
+            'nama_kategori' => 'Roti Manis',
+            'slug' => 'roti-manis-search',
+        ]);
+        Product::query()->create([
+            'category_id' => $brownies->id_category,
+            'nama' => 'Cheese Brownies',
+            'harga' => 25000,
+            'stok' => 8,
+            'status' => 'active',
+        ]);
+        Product::query()->create([
+            'category_id' => $bread->id_category,
+            'nama' => 'Roti Cokelat',
+            'harga' => 18000,
+            'stok' => 6,
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.products', ['search' => 'Cheese']))
+            ->assertOk()
+            ->assertSee('Cheese Brownies')
+            ->assertDontSee('Roti Cokelat');
+
+        $this->actingAs($admin)
+            ->get(route('admin.categories', ['search' => 'roti-manis']))
+            ->assertOk()
+            ->assertSee('Roti Manis')
+            ->assertDontSee('Brownies')
+            ->assertSee('admin-category-search', false);
     }
 
     public function test_home_shows_active_promo_modal_with_code_and_usage_period(): void
@@ -343,7 +598,22 @@ class AdminDashboardFeaturesTest extends TestCase
             ->assertOk()
             ->assertJsonPath('quantity', 1)
             ->assertJsonPath('stock_remaining', 2)
-            ->assertJsonPath('cart_item_count', 1);
+            ->assertJsonPath('cart_item_count', 1)
+            ->assertJsonPath('cart_summary.item_count', 1)
+            ->assertJsonPath('cart_summary.subtotal', 12000)
+            ->assertJsonPath('cart_summary.items.0.name', 'Brownies Stok Tes');
+
+        $this->getJson(route('cart.summary'))
+            ->assertOk()
+            ->assertJsonPath('item_count', 1)
+            ->assertJsonPath('subtotal', 12000);
+
+        $this->get(route('products'))
+            ->assertOk()
+            ->assertSee('data-live-cart', false)
+            ->assertSee(route('cart.summary'), false)
+            ->assertSee('class="col-lg-9"', false)
+            ->assertSee('class="bb-products-grid"', false);
 
         $this->postJson(route('cart.add'), [
             'product_id' => $product->id_product,
@@ -352,7 +622,9 @@ class AdminDashboardFeaturesTest extends TestCase
             ->assertOk()
             ->assertJsonPath('quantity', 2)
             ->assertJsonPath('stock_remaining', 1)
-            ->assertJsonPath('cart_item_count', 2);
+            ->assertJsonPath('cart_item_count', 2)
+            ->assertJsonPath('cart_summary.item_count', 2)
+            ->assertJsonPath('cart_summary.subtotal', 24000);
 
         $this->postJson(route('cart.add'), [
             'product_id' => $product->id_product,

@@ -98,6 +98,15 @@
                     @else
                         <p class="section-sub mb-0 text-muted"><i class="bi bi-info-circle me-2"></i>Bukti pembayaran belum diunggah atau belum diverifikasi.</p>
                     @endif
+                    @if(in_array($order->payment_method, ['transfer', 'ewallet'], true) && $order->payment_status !== 'verified' && $order->status !== 'cancelled')
+                        <div class="bb-payment-info-panel mt-3">
+                            <h4>Instruksi pembayaran</h4>
+                            @include('customer.partials.payment-instructions', [
+                                'paymentMethod' => $order->payment_method,
+                                'paymentDetails' => $paymentDetails,
+                            ])
+                        </div>
+                    @endif
                 </div>
 
                 <div class="bb-panel side-panel mb-3">
@@ -159,7 +168,7 @@
         @media print {
             @page {
                 size: A4 portrait;
-                margin: 14mm;
+                margin: 0;
             }
 
             html, body {

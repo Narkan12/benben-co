@@ -5,7 +5,6 @@
 @section('content')
     <div class="bb-dash-topbar">
         <div>
-            <span class="eyebrow">Admin Panel</span>
             <h1 class="section-title" style="font-size:1.6rem;">Rating &amp; Ulasan</h1>
         </div>
     </div>
@@ -26,14 +25,20 @@
     </div>
 
     <form method="GET" class="bb-filter-bar">
-        <input type="search" name="search" class="bb-input" value="{{ request('search') }}"
-               placeholder="Cari nama, produk, atau komentar..." style="max-width:320px;">
-        <select name="rating" class="bb-input" style="width:auto;">
-            <option value="">Semua rating</option>
-            @for($star = 5; $star >= 1; $star--)
-                <option value="{{ $star }}" @selected((string) request('rating') === (string) $star)>{{ $star }} bintang</option>
-            @endfor
-        </select>
+        <div class="bb-filter-field">
+            <label for="rating-search" class="bb-form-label">Cari pelanggan, produk, atau ulasan</label>
+            <input id="rating-search" type="search" name="search" class="bb-input" value="{{ request('search') }}"
+                   placeholder="Nama, produk, atau komentar">
+        </div>
+        <div class="bb-filter-field">
+            <label for="rating-filter" class="bb-form-label">Nilai rating</label>
+            <select id="rating-filter" name="rating" class="bb-input">
+                <option value="">Semua rating</option>
+                @for($star = 5; $star >= 1; $star--)
+                    <option value="{{ $star }}" @selected((string) request('rating') === (string) $star)>{{ $star }} bintang</option>
+                @endfor
+            </select>
+        </div>
         <button type="submit" class="btn-bb btn-bb-outline btn-bb-sm">Filter</button>
         @if(request()->hasAny(['search', 'rating']))
             <a href="{{ route('admin.ratings') }}" class="btn-bb btn-bb-outline btn-bb-sm">Reset</a>

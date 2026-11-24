@@ -53,6 +53,7 @@ class CartController extends Controller
                 'quantity' => $qty,
                 'stock_remaining' => (int) $product->stok - $qty,
                 'cart_item_count' => collect($cart)->sum('qty'),
+                'cart_summary' => $this->cartSummary($cart),
             ]);
         }
 
@@ -61,6 +62,11 @@ class CartController extends Controller
         }
 
         return back()->with('success', $product->nama.' ditambahkan ke keranjang.');
+    }
+
+    public function summary()
+    {
+        return response()->json($this->cartSummary(session('cart', [])));
     }
 
     public function update(Request $request, int $productId)
@@ -105,5 +111,40 @@ class CartController extends Controller
         session()->forget('cart');
 
         return back()->with('success', 'Keranjang berhasil dibersihkan.');
+    }
+
+    private function cartSummary(array $cart): array
+    {
+        $products = Product::query()
+            ->whereIn('id_product', array_keys($cart))
+            ->get()
+            ->keyBy('id_product');
+
+        $items = [];
+        foreach ($cart as $productId => $cartItem) {
+            $product = $products->get((int) $productId);
+
+            if (! $product) {
+                continue;
+            }
+
+            $quantity = max(1, (int) ($cartItem['qty'] ?? 1));
+            $price = (int) $product->harga;
+            $items[] = [
+                'product_id' => $product->id_product,
+                'name' => $product->nama,
+                'image' => route('media.show', ['path' => $product->gambar ?: 'images/logo.png']),
+                'price' => $price,
+                'quantity' => $quantity,
+                'line_total' => $price * $quantity,
+                'available' => $product->status === 'active' && $quantity <= (int) $product->stok,
+            ];
+        }
+
+        return [
+            'items' => $items,
+            'item_count' => array_sum(array_column($items, 'quantity')),
+            'subtotal' => array_sum(array_column($items, 'line_total')),
+        ];
     }
 }

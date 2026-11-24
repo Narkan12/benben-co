@@ -76,10 +76,13 @@
                              data-product-id="{{ $product['id'] }}"
                              data-stock="{{ $product['stock'] }}"
                              data-cart-qty="{{ $product['cartQty'] }}">
-                            <div class="bb-cart-qty">
-                                <button type="button" data-qty-minus aria-label="Kurangi jumlah">−</button>
-                                <input type="text" name="qty" value="1" inputmode="numeric" data-numeric-input data-qty-input required @disabled($stockAvailable < 1)>
-                                <button type="button" data-qty-plus aria-label="Tambah jumlah" @disabled($stockAvailable < 2)>+</button>
+                            <div>
+                                <label for="detail-quantity" class="bb-form-label mb-1">Jumlah produk</label>
+                                <div class="bb-cart-qty">
+                                    <button type="button" data-qty-minus aria-label="Kurangi jumlah">−</button>
+                                    <input id="detail-quantity" type="text" name="qty" value="1" inputmode="numeric" data-numeric-input data-qty-input required @disabled($stockAvailable < 1)>
+                                    <button type="button" data-qty-plus aria-label="Tambah jumlah" @disabled($stockAvailable < 2)>+</button>
+                                </div>
                             </div>
                             <span class="section-sub" style="font-size:.85rem;">
                                 Tersedia ditambahkan: <strong data-detail-available-count>{{ number_format($stockAvailable, 0, ',', '.') }}</strong> pcs
@@ -96,7 +99,7 @@
                             <button type="submit" name="go_to_checkout" value="1" class="btn-bb btn-bb-primary" data-loading-button @disabled($stockAvailable < 1)>
                                 Beli Sekarang <i class="bi bi-arrow-right"></i>
                             </button>
-                            <button type="button" class="btn-icon-circle" title="Tambah ke favorit">
+                            <button type="button" class="btn-icon-circle" title="Tambah {{ $product['name'] }} ke favorit" aria-label="Tambah {{ $product['name'] }} ke favorit">
                                 <i class="bi bi-heart"></i>
                             </button>
                         </div>
@@ -165,7 +168,8 @@
                             @error('nama_customer')<small class="text-danger">{{ $message }}</small>@enderror
                         </div>
                         <fieldset>
-                            <legend class="bb-form-label">Rating</legend>
+                            <legend class="bb-form-label">Rating <span class="bb-required-indicator" title="Wajib diisi" aria-hidden="true">*</span></legend>
+                            <small class="section-sub d-block mb-2">Pilih satu sampai lima bintang.</small>
                             <div class="bb-rating-input" role="radiogroup" aria-label="Pilih rating dari satu sampai lima bintang">
                                 @for($star = 5; $star >= 1; $star--)
                                     <input type="radio" id="review-rating-{{ $star }}" name="rating" value="{{ $star }}"

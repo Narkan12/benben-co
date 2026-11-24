@@ -2,8 +2,8 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminPageController;
-use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Auth\GoogleController;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\OrderController;
@@ -22,13 +22,17 @@ Route::get('/', [PublicStoreController::class, 'home'])->name('home');
 Route::get('/about', [PublicStoreController::class, 'about'])->name('about');
 Route::get('/products', [PublicStoreController::class, 'products'])->name('products');
 Route::get('/products/{slug}', [PublicStoreController::class, 'productDetail'])->name('product.detail');
-Route::post('/products/{product}/review', [OrderController::class, 'submitReview'])->name('product.review');
+Route::post('/products/{product}/review', [OrderController::class, 'submitReview'])
+    ->middleware('throttle:10,1')
+    ->name('product.review');
 Route::get('/promotions', [PublicStoreController::class, 'promos'])->name('promotions');
+Route::get('/gallery', [PublicStoreController::class, 'gallery'])->name('gallery');
 Route::get('/contact', [PublicStoreController::class, 'contact'])->name('contact');
 
 Route::middleware([CustomerOnly::class, 'prevent-back-cache'])->group(function () {
     Route::get('/cart', [PublicStoreController::class, 'cart'])->name('cart');
     Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
+    Route::get('/cart/summary', [CartController::class, 'summary'])->name('cart.summary');
     Route::post('/cart/{productId}/update', [CartController::class, 'update'])->name('cart.update');
     Route::delete('/cart/{productId}', [CartController::class, 'remove'])->name('cart.remove');
     Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
@@ -42,7 +46,7 @@ Route::get('/login', [AuthController::class, 'showCustomerLogin'])->name('login'
 Route::post('/login', [AuthController::class, 'customerLogin'])->middleware('throttle:5,1')->name('login.submit');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/register', fn () => view('auth.register'))->name('register');
-Route::post('/register', [AuthController::class, 'register'])->name('register.submit');
+Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,1')->name('register.submit');
 
 Route::get('/auth/google/{intent}', [GoogleController::class, 'redirect'])
     ->whereIn('intent', ['customer', 'admin'])
@@ -80,6 +84,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/pos/{order}/receipt', [POSController::class, 'receipt'])->name('pos.receipt');
         Route::get('/settings', [AdminController::class, 'settings'])->name('settings');
         Route::patch('/settings', [AdminController::class, 'updateSettings'])->name('settings.update');
+        Route::get('/store-settings', [AdminController::class, 'storeSettings'])->name('store-settings');
+        Route::patch('/settings/payment', [AdminController::class, 'updatePaymentSettings'])->name('settings.payment.update');
         Route::get('/company-profile', [AdminController::class, 'companyProfile'])->name('company-profile');
         Route::put('/company-profile/images/{imageKey}', [AdminController::class, 'updateCompanyProfileImage'])->name('company-profile.images.update');
         Route::get('/pages', [AdminPageController::class, 'index'])->name('pages.index');

@@ -5,7 +5,6 @@
 @section('content')
     <div class="bb-dash-topbar">
         <div>
-            <span class="eyebrow">Admin Panel</span>
             <h2 class="section-title" style="font-size:1.6rem;">Kelola Pengguna</h2>
         </div>
     </div>
@@ -15,31 +14,32 @@
         <form method="POST" action="{{ route('admin.users.store') }}" class="row g-3">
             @csrf
             <div class="col-md-3">
-                <label class="bb-form-label">Nama</label>
-                <input type="text" name="nama" class="bb-input" required>
+                <label for="new-user-name" class="bb-form-label">Nama</label>
+                <input id="new-user-name" type="text" name="nama" class="bb-input" required>
             </div>
             <div class="col-md-3">
-                <label class="bb-form-label">Username</label>
-                <input type="text" name="username" class="bb-input" required>
+                <label for="new-user-username" class="bb-form-label">Username</label>
+                <input id="new-user-username" type="text" name="username" class="bb-input" required>
             </div>
             <div class="col-md-3">
-                <label class="bb-form-label">Email</label>
-                <input type="email" name="email" class="bb-input">
+                <label for="new-user-email" class="bb-form-label">Email (opsional)</label>
+                <input id="new-user-email" type="email" name="email" class="bb-input">
             </div>
             <div class="col-md-3">
-                <label class="bb-form-label">Role</label>
-                <select name="role" class="bb-input" required>
+                <label for="new-user-role" class="bb-form-label">Role pengguna</label>
+                <select id="new-user-role" name="role" class="bb-input" required>
                     <option value="admin">Admin</option>
                     <option value="kasir">Kasir</option>
                 </select>
             </div>
             <div class="col-md-4">
-                <label class="bb-form-label">Password</label>
-                <input type="password" name="password" class="bb-input" required>
+                <label for="new-user-password" class="bb-form-label">Password</label>
+                <input id="new-user-password" type="password" name="password" class="bb-input" required>
+                <small class="form-text">Gunakan minimal 8 karakter.</small>
             </div>
             <div class="col-md-4">
-                <label class="bb-form-label">Konfirmasi Password</label>
-                <input type="password" name="password_confirmation" class="bb-input" required>
+                <label for="new-user-password-confirmation" class="bb-form-label">Konfirmasi Password</label>
+                <input id="new-user-password-confirmation" type="password" name="password_confirmation" class="bb-input" required>
             </div>
             <div class="col-md-4 d-flex align-items-end">
                 <button type="submit" class="btn-bb btn-bb-primary btn-bb-sm">Tambah Pengguna</button>
@@ -48,12 +48,18 @@
     </div>
 
     <form method="GET" class="bb-filter-bar">
-        <input type="search" name="search" value="{{ request('search') }}" class="bb-input" placeholder="Cari pengguna..." style="max-width:220px;">
-        <select name="role" class="bb-input">
-            <option value="">Semua role</option>
-            <option value="admin" {{ request('role') === 'admin' ? 'selected' : '' }}>Admin</option>
-            <option value="kasir" {{ request('role') === 'kasir' ? 'selected' : '' }}>Kasir</option>
-        </select>
+        <div class="bb-filter-field">
+            <label for="user-search" class="bb-form-label">Cari nama, username, atau email</label>
+            <input id="user-search" type="search" name="search" value="{{ request('search') }}" class="bb-input" placeholder="Nama, username, atau email">
+        </div>
+        <div class="bb-filter-field">
+            <label for="user-role-filter" class="bb-form-label">Role pengguna</label>
+            <select id="user-role-filter" name="role" class="bb-input">
+                <option value="">Semua role</option>
+                <option value="admin" {{ request('role') === 'admin' ? 'selected' : '' }}>Admin</option>
+                <option value="kasir" {{ request('role') === 'kasir' ? 'selected' : '' }}>Kasir</option>
+            </select>
+        </div>
         <button type="submit" class="btn-bb btn-bb-primary btn-bb-sm">Terapkan Filter</button>
         <a href="{{ route('admin.users') }}" class="btn-bb btn-bb-outline btn-bb-sm">Reset</a>
     </form>
@@ -142,6 +148,7 @@
                         <div class="bb-input-group">
                             <label for="edit-user-password" class="bb-form-label">Password baru (opsional)</label>
                             <input id="edit-user-password" type="password" name="password" class="bb-input" minlength="8" autocomplete="new-password">
+                            <small class="form-text">Kosongkan jika tidak diganti; jika diisi, minimal 8 karakter.</small>
                         </div>
                         <div class="bb-input-group">
                             <label for="edit-user-password-confirmation" class="bb-form-label">Konfirmasi password baru</label>

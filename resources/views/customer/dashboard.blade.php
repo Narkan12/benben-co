@@ -27,7 +27,6 @@
 
 <div class="bb-dash-topbar">
     <div>
-        <span class="eyebrow">Area pelanggan</span>
         <h1 class="section-title" style="font-size:1.6rem;">Halo, {{ $customerName }}!</h1>
         <p class="section-sub mb-0">Pantau pesanan Anda dan lanjutkan aktivitas belanja dengan lebih mudah.</p>
     </div>

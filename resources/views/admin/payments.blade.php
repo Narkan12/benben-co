@@ -5,7 +5,6 @@
 @section('content')
     <div class="bb-dash-topbar">
         <div>
-            <span class="eyebrow">Admin Panel</span>
             <h2 class="section-title" style="font-size:1.6rem;">Konfirmasi Pembayaran</h2>
         </div>
     </div>

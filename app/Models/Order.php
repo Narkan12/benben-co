@@ -25,6 +25,7 @@ class Order extends Model
         'total',
         'status',
         'payment_method',
+        'payment_details',
         'payment_status',
         'cash_received',
         'cash_change',
@@ -41,6 +42,7 @@ class Order extends Model
 
     protected $casts = [
         'tanggal' => 'datetime',
+        'payment_details' => 'array',
         'cash_received' => 'float',
         'cash_change' => 'float',
         'admin_viewed_at' => 'datetime',

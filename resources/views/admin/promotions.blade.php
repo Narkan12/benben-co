@@ -5,7 +5,6 @@
 @section('content')
     <div class="bb-dash-topbar">
         <div>
-            <span class="eyebrow">Admin Panel</span>
             <h2 class="section-title" style="font-size:1.6rem;">Kelola Promo</h2>
         </div>
         <button type="button" class="btn-bb btn-bb-primary" data-bs-toggle="modal" data-bs-target="#promoModal" data-add-promotion data-action="{{ route('admin.promotions.store') }}">
@@ -32,7 +31,7 @@
                             <td><span class="bb-status {{ $statusClass }}">{{ $promoStatus }}</span></td>
                             <td>
                                 <div class="bb-action-icons">
-                                    <button type="button" title="Edit" data-bs-toggle="modal" data-bs-target="#promoModal" data-edit-promotion
+                                    <button type="button" title="Edit {{ $promo->nama_promo }}" aria-label="Edit promo {{ $promo->nama_promo }}" data-bs-toggle="modal" data-bs-target="#promoModal" data-edit-promotion
                                         data-action="{{ route('admin.promotions.update', $promo->id_promo) }}"
                                         data-name="{{ $promo->nama_promo }}" data-code="{{ $promo->kode_promo }}"
                                         data-type="{{ $promo->jenis_diskon }}" data-value="{{ $promo->nilai_diskon }}"
@@ -70,33 +69,35 @@
                     <input type="hidden" name="_method" value="POST" data-promotion-method>
                     <div class="modal-body">
                         <div class="bb-input-group">
-                            <label class="bb-form-label">Nama Promo</label>
-                            <input type="text" name="nama_promo" class="bb-input" required maxlength="100">
+                            <label for="promo-name" class="bb-form-label">Nama Promo</label>
+                            <input id="promo-name" type="text" name="nama_promo" class="bb-input" required maxlength="100">
                         </div>
                         <div class="bb-input-group">
-                            <label class="bb-form-label">Kode Promo</label>
-                            <input type="text" name="kode_promo" class="bb-input" required maxlength="50" pattern="[A-Za-z0-9_-]+">
+                            <label for="promo-code" class="bb-form-label">Kode Promo</label>
+                            <input id="promo-code" type="text" name="kode_promo" class="bb-input" required maxlength="50" pattern="[A-Za-z0-9_-]+">
+                            <small class="form-text">Gunakan huruf, angka, tanda hubung, atau garis bawah.</small>
                         </div>
                         <div class="row g-3">
                             <div class="col-6 bb-input-group">
-                                <label class="bb-form-label">Jenis Diskon</label>
-                                <select name="jenis_diskon" class="bb-input" required><option value="persen">Persen</option><option value="nominal">Nominal (Rp)</option></select>
+                                <label for="promo-type" class="bb-form-label">Jenis Diskon</label>
+                                <select id="promo-type" name="jenis_diskon" class="bb-input" required><option value="persen">Persen</option><option value="nominal">Nominal (Rp)</option></select>
                             </div>
                             <div class="col-6 bb-input-group">
-                                <label class="bb-form-label">Nilai Diskon</label>
-                                <input type="text" name="nilai_diskon" class="bb-input" inputmode="numeric" data-numeric-input data-promotion-value required>
+                                <label for="promo-value" class="bb-form-label">Nilai Diskon</label>
+                                <input id="promo-value" type="text" name="nilai_diskon" class="bb-input" inputmode="numeric" data-numeric-input data-promotion-value required>
+                                <small class="form-text">Masukkan persen atau nominal rupiah sesuai jenis diskon.</small>
                             </div>
                             <div class="col-6 bb-input-group">
-                                <label class="bb-form-label">Tanggal Mulai</label>
-                                <input type="date" name="tanggal_mulai" class="bb-input" required>
+                                <label for="promo-start-date" class="bb-form-label">Tanggal Mulai</label>
+                                <input id="promo-start-date" type="date" name="tanggal_mulai" class="bb-input" required>
                             </div>
                             <div class="col-6 bb-input-group">
-                                <label class="bb-form-label">Tanggal Selesai</label>
-                                <input type="date" name="tanggal_berakhir" class="bb-input" required>
+                                <label for="promo-end-date" class="bb-form-label">Tanggal Selesai</label>
+                                <input id="promo-end-date" type="date" name="tanggal_berakhir" class="bb-input" required>
                             </div>
                             <div class="col-12 bb-input-group">
-                                <label class="bb-form-label">Status</label>
-                                <select name="status" class="bb-input" required><option value="active">Aktif</option><option value="inactive">Nonaktif</option></select>
+                                <label for="promo-status" class="bb-form-label">Status Promo</label>
+                                <select id="promo-status" name="status" class="bb-input" required><option value="active">Aktif</option><option value="inactive">Nonaktif</option></select>
                             </div>
                         </div>
                     </div>

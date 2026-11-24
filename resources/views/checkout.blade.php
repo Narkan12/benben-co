@@ -30,7 +30,8 @@
                             </div>
                             <div class="col-12">
                                 <label for="checkout-address" class="bb-form-label">Alamat Pengiriman</label>
-                                <textarea id="checkout-address" name="alamat" class="bb-input" rows="2" placeholder="Wajib diisi untuk delivery">{{ old('alamat', $customer?->alamat) }}</textarea>
+                                <textarea id="checkout-address" name="alamat" class="bb-input" rows="2" placeholder="Contoh: Jalan Melati No. 10, Antapani">{{ old('alamat', $customer?->alamat) }}</textarea>
+                                <small class="section-sub d-block mt-1">Wajib diisi jika memilih pengiriman ke alamat.</small>
                             </div>
                             <div class="col-12">
                                 <label for="checkout-note" class="bb-form-label">Catatan (opsional)</label>
@@ -40,9 +41,9 @@
                     </div>
 
                     <div class="bb-panel mb-4">
-                        <h5 class="bb-panel-title"><i class="bi bi-truck me-2"></i>Metode Pengiriman</h5>
+                        <h5 class="bb-panel-title"><i class="bi bi-truck me-2"></i>Metode Pengiriman <small class="section-sub">(wajib dipilih)</small></h5>
                         <div class="row g-3">
-                            @foreach(['pickup' => 'Ambil di Toko', 'delivery' => 'Delivery'] as $method => $label)
+                            @foreach(['pickup' => 'Ambil di Toko', 'delivery' => 'Diantar ke Alamat'] as $method => $label)
                                 <div class="col-md-6">
                                     <label class="bb-filter-card d-flex align-items-center gap-2 mb-0" style="cursor:pointer;">
                                         <input type="radio" name="delivery_method" value="{{ $method }}" @checked(old('delivery_method', 'pickup') === $method) required>
@@ -54,9 +55,9 @@
                     </div>
 
                     <div class="bb-panel">
-                        <h5 class="bb-panel-title"><i class="bi bi-credit-card me-2"></i>Metode Pembayaran</h5>
+                        <h5 class="bb-panel-title"><i class="bi bi-credit-card me-2"></i>Metode Pembayaran <small class="section-sub">(wajib dipilih)</small></h5>
                         <div class="row g-3">
-                            @foreach(['transfer' => 'Transfer Bank', 'ewallet' => 'E-Wallet', 'cash' => 'Tunai'] as $method => $label)
+                            @foreach(['transfer' => 'Transfer Bank', 'ewallet' => 'E-Wallet / QRIS', 'cash' => 'Tunai'] as $method => $label)
                                 <div class="col-md-4">
                                     <label class="bb-filter-card d-flex align-items-center gap-2 mb-0" style="cursor:pointer;">
                                         <input type="radio" name="payment_method" value="{{ $method }}" @checked(old('payment_method', 'transfer') === $method) required>
@@ -65,8 +66,24 @@
                                 </div>
                             @endforeach
                         </div>
+
+                        <section class="bb-payment-info-panel mt-3" data-payment-instructions="transfer" @if(old('payment_method', 'transfer') !== 'transfer') hidden @endif>
+                            <h6>Tujuan Transfer Bank</h6>
+                            @include('customer.partials.payment-instructions', [
+                                'paymentMethod' => 'transfer',
+                                'paymentDetails' => $paymentSettings->paymentInstructions('transfer'),
+                            ])
+                        </section>
+                        <section class="bb-payment-info-panel mt-3" data-payment-instructions="ewallet" @if(old('payment_method', 'transfer') !== 'ewallet') hidden @endif>
+                            <h6>Pembayaran E-Wallet / QRIS</h6>
+                            @include('customer.partials.payment-instructions', [
+                                'paymentMethod' => 'ewallet',
+                                'paymentDetails' => $paymentSettings->paymentInstructions('ewallet'),
+                            ])
+                        </section>
+
                         <div class="bb-input-group mt-3" data-payment-proof-group>
-                            <label for="payment-proof" class="bb-form-label">Bukti Transfer / E-Wallet (opsional, JPG/PNG/WEBP maksimal 5 MB)</label>
+                            <label for="payment-proof" class="bb-form-label">Bukti Transfer / E-Wallet / QRIS (opsional, JPG/PNG/WEBP maksimal 5 MB)</label>
                             <input id="payment-proof" type="file" name="payment_proof" class="bb-input" accept="image/jpeg,image/png,image/webp">
                             <small class="section-sub">Admin akan memeriksa bukti Transfer atau E-Wallet sebelum pesanan dikonfirmasi.</small>
                         </div>
@@ -127,6 +144,9 @@
                 address.required = delivery;
                 proofGroup.hidden = payment === 'cash';
                 proofInput.disabled = payment === 'cash';
+                document.querySelectorAll('[data-payment-instructions]').forEach((panel) => {
+                    panel.hidden = panel.dataset.paymentInstructions !== payment;
+                });
                 const fee = delivery ? deliveryCost : 0;
                 shippingFee.textContent = money(fee);
                 orderTotal.textContent = money(Math.max(0, subtotal - appliedDiscount + fee));

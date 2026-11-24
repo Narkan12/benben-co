@@ -88,6 +88,7 @@
 
         </section>
     </main>
+    <script src="{{ asset('js/form-inputs.js') }}"></script>
     <script>
         document.querySelector('.bb-staff-login-form').addEventListener('submit', function (event) {
             const button = this.querySelector('[data-loading-button]');

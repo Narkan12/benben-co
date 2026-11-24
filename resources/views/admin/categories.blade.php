@@ -6,13 +6,24 @@
 
     <div class="bb-dash-topbar">
         <div>
-            <span class="eyebrow">Admin Panel</span>
             <h2 class="section-title" style="font-size:1.6rem;">Kelola Kategori</h2>
         </div>
         <button type="button" class="btn-bb btn-bb-primary" data-bs-toggle="modal" data-bs-target="#categoryModal" data-add-category data-action="{{ route('admin.categories.store') }}">
             <i class="bi bi-plus-lg"></i> Tambah Kategori
         </button>
     </div>
+
+    <form method="GET" class="bb-filter-bar">
+        <div class="bb-filter-field">
+            <label for="admin-category-search" class="bb-form-label">Cari nama atau slug kategori</label>
+            <input id="admin-category-search" type="search" name="search" class="bb-input"
+                   value="{{ request('search') }}" placeholder="Nama atau slug kategori" maxlength="100">
+        </div>
+        <button class="btn-bb btn-bb-outline btn-bb-sm" type="submit">Cari</button>
+        @if(request()->filled('search'))
+            <a class="btn-bb btn-bb-outline btn-bb-sm" href="{{ route('admin.categories') }}">Reset</a>
+        @endif
+    </form>
 
     <div class="bb-panel">
         <div style="overflow-x:auto;">
@@ -26,7 +37,7 @@
                             <td>{{ $cat->products_count }} produk</td>
                             <td>
                                 <div class="bb-action-icons">
-                                    <button type="button" title="Edit" data-bs-toggle="modal" data-bs-target="#categoryModal" data-edit-category data-action="{{ route('admin.categories.update', $cat->id_category) }}" data-name="{{ $cat->nama_kategori }}" data-slug="{{ $cat->slug }}"><i class="bi bi-pencil"></i></button>
+                                    <button type="button" title="Edit {{ $cat->nama_kategori }}" aria-label="Edit kategori {{ $cat->nama_kategori }}" data-bs-toggle="modal" data-bs-target="#categoryModal" data-edit-category data-action="{{ route('admin.categories.update', $cat->id_category) }}" data-name="{{ $cat->nama_kategori }}" data-slug="{{ $cat->slug }}"><i class="bi bi-pencil"></i></button>
                                     <button type="button" title="Hapus" aria-label="Hapus {{ $cat->nama_kategori }}"
                                         data-bs-toggle="modal" data-bs-target="#crud-delete-confirm-modal"
                                         data-crud-delete data-delete-action="{{ route('admin.categories.delete', $cat->id_category) }}"
@@ -37,7 +48,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="4" class="text-center">Belum ada kategori.</td></tr>
+                        <tr><td colspan="4" class="text-center">{{ request()->filled('search') ? 'Kategori tidak ditemukan.' : 'Belum ada kategori.' }}</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -50,19 +61,19 @@
             <div class="modal-content bb-crud-modal">
                 <div class="modal-header">
                     <h5 class="modal-title">Tambah Kategori</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
                 </div>
                 <form method="POST" action="{{ route('admin.categories.store') }}" data-category-form>
                     @csrf
                     <input type="hidden" name="_method" value="POST" data-category-method>
                     <div class="modal-body">
                         <div class="bb-input-group">
-                            <label class="bb-form-label">Nama Kategori</label>
-                            <input type="text" name="nama_kategori" class="bb-input" placeholder="Nama kategori" required maxlength="100">
+                            <label for="category-name" class="bb-form-label">Nama Kategori</label>
+                            <input id="category-name" type="text" name="nama_kategori" class="bb-input" placeholder="Nama kategori" required maxlength="100">
                         </div>
                         <div class="bb-input-group">
-                            <label class="bb-form-label">Slug (opsional)</label>
-                            <input type="text" name="slug" class="bb-input" placeholder="dibuat-otomatis">
+                            <label for="category-slug" class="bb-form-label">Slug URL (opsional)</label>
+                            <input id="category-slug" type="text" name="slug" class="bb-input" placeholder="dibuat-otomatis">
                         </div>
                     </div>
                     <div class="modal-footer">

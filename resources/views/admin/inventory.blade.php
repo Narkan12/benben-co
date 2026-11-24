@@ -6,7 +6,6 @@
 
     <div class="bb-dash-topbar">
         <div>
-            <span class="eyebrow">Admin Panel</span>
             <h2 class="section-title" style="font-size:1.6rem;">Manajemen Stok</h2>
         </div>
     </div>
@@ -30,11 +29,17 @@
                                 @endif
                             </td>
                             <td>
-                                <form method="POST" action="{{ route('admin.inventory.update', $product->id_product) }}" class="d-flex gap-2 align-items-center">
+                                <form method="POST" action="{{ route('admin.inventory.update', $product->id_product) }}" class="d-flex flex-wrap gap-2 align-items-end">
                                     @csrf
                                     @method('PATCH')
-                                    <input type="text" name="stok" class="bb-input" value="{{ $product->stok }}" inputmode="numeric" data-numeric-input required aria-label="Stok baru untuk {{ $product->nama }}" style="max-width:100px">
-                                    <input type="text" name="keterangan" class="bb-input" placeholder="Catatan (opsional)" maxlength="255" aria-label="Catatan perubahan stok">
+                                    <div>
+                                        <label for="stock-{{ $product->id_product }}" class="bb-form-label mb-1">Stok baru (pcs)</label>
+                                        <input id="stock-{{ $product->id_product }}" type="text" name="stok" class="bb-input" value="{{ $product->stok }}" inputmode="numeric" data-numeric-input required style="max-width:120px">
+                                    </div>
+                                    <div>
+                                        <label for="stock-note-{{ $product->id_product }}" class="bb-form-label mb-1">Catatan perubahan (opsional)</label>
+                                        <input id="stock-note-{{ $product->id_product }}" type="text" name="keterangan" class="bb-input" maxlength="255">
+                                    </div>
                                     <button type="submit" class="btn-bb btn-bb-outline btn-bb-sm">Simpan</button>
                                 </form>
                             </td>

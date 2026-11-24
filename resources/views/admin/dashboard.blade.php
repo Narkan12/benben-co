@@ -74,16 +74,25 @@
 
     <div class="bb-dashboard-section-heading">
         <div><span>GAMBARAN USAHA</span><h2>Performa penjualan</h2></div>
-        <form method="GET" class="d-flex flex-wrap gap-2 align-items-center">
-            <select name="period" class="bb-input" style="width:auto;padding:7px 12px;" onchange="this.form.submit()">
+        <form method="GET" class="d-flex flex-wrap gap-2 align-items-end">
+            <div class="bb-filter-field">
+                <label for="sales-period" class="bb-form-label">Periode penjualan</label>
+                <select id="sales-period" name="period" class="bb-input" style="width:auto;padding:7px 12px;" onchange="this.form.submit()">
                 <option value="today" @selected($period === 'today')>Hari ini</option>
                 <option value="7d" @selected($period === '7d')>7 hari terakhir</option>
                 <option value="month" @selected($period === 'month')>Bulan ini</option>
                 <option value="custom" @selected($period === 'custom')>Rentang khusus</option>
-            </select>
+                </select>
+            </div>
             @if($period === 'custom')
-                <input type="date" name="start_date" value="{{ $periodStart->toDateString() }}" class="bb-input" style="width:auto;padding:7px 12px;">
-                <input type="date" name="end_date" value="{{ $periodEnd->toDateString() }}" class="bb-input" style="width:auto;padding:7px 12px;">
+                <div class="bb-filter-field">
+                    <label for="sales-start-date" class="bb-form-label">Dari tanggal</label>
+                    <input id="sales-start-date" type="date" name="start_date" value="{{ $periodStart->toDateString() }}" class="bb-input" style="width:auto;padding:7px 12px;">
+                </div>
+                <div class="bb-filter-field">
+                    <label for="sales-end-date" class="bb-form-label">Sampai tanggal</label>
+                    <input id="sales-end-date" type="date" name="end_date" value="{{ $periodEnd->toDateString() }}" class="bb-input" style="width:auto;padding:7px 12px;">
+                </div>
                 <button class="btn-bb btn-bb-outline btn-bb-sm">Terapkan</button>
             @endif
         </form>

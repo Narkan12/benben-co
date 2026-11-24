@@ -35,9 +35,10 @@
                                 </div>
                                 <form method="POST" action="{{ route('cart.update', $item['id_product']) }}" class="bb-cart-update-form" data-cart-update-form>
                                     @csrf
+                                    <label for="cart-quantity-{{ $item['id_product'] }}" class="bb-form-label mb-1">Jumlah</label>
                                     <div class="bb-cart-qty">
                                         <button type="button" data-qty-minus aria-label="Kurangi jumlah">−</button>
-                                        <input type="text" name="qty" value="{{ $item['qty'] }}" inputmode="numeric" data-numeric-input data-qty-input required>
+                                        <input id="cart-quantity-{{ $item['id_product'] }}" type="text" name="qty" value="{{ $item['qty'] }}" inputmode="numeric" data-numeric-input data-qty-input required aria-label="Jumlah {{ $item['name'] }}">
                                         <button type="button" data-qty-plus aria-label="Tambah jumlah" @disabled($item['qty'] >= $item['stock'])>+</button>
                                     </div>
                                     <small class="section-sub" data-cart-stock-info aria-live="polite">

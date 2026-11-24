@@ -44,6 +44,7 @@
         <section class="col-lg-5" aria-label="Keranjang transaksi">
             <form method="POST" action="{{ route('admin.pos.store') }}" class="bb-panel" id="pos-form">
                 @csrf
+                <input type="hidden" name="checkout_token" value="{{ $transactionToken }}">
                 <h2 class="bb-panel-title">Transaksi Baru</h2>
                 <label for="pos-customer" class="bb-form-label">Nama pelanggan</label>
                 <input id="pos-customer" name="nama" class="bb-input mb-3" value="{{ old('nama', 'Pelanggan Toko') }}" required maxlength="100">
@@ -62,8 +63,17 @@
                     <option value="transfer">Transfer</option>
                     <option value="ewallet">E-Wallet</option>
                 </select>
-                <label for="pos-received" class="bb-form-label">Jumlah dibayar</label>
-                <input id="pos-received" type="text" name="amount_received" class="bb-input" inputmode="numeric" data-numeric-input data-money-input value="0" required>
+                <div class="bb-pos-payment-layout">
+                    <div>
+                        <label for="pos-received" class="bb-form-label">Jumlah dibayar</label>
+                        <input id="pos-received" type="text" name="amount_received" class="bb-input" inputmode="numeric" data-numeric-input data-money-input value="0" aria-describedby="pos-received-help" required>
+                    </div>
+                    <div data-pos-payment-presets role="group" aria-label="Pilih nominal pembayaran">
+                        <span class="bb-form-label">Nominal cepat</span>
+                        <div class="bb-pos-payment-options" data-pos-payment-options></div>
+                    </div>
+                </div>
+                <small id="pos-received-help" class="section-sub d-block mt-1">Ketik nominal tanpa simbol Rp; pemisah ribuan ditambahkan otomatis.</small>
                 <div class="bb-summary-row mt-2"><span>Kembalian</span><span id="pos-change">Rp0</span></div>
                 <button type="submit" class="btn-bb btn-bb-primary w-100 mt-3" data-loading-button>
                     Simpan Transaksi

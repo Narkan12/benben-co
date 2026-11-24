@@ -31,6 +31,7 @@
         <div class="col-md-6 bb-input-group">
             <label for="username" class="bb-form-label">Username</label>
             <input id="username" type="text" class="bb-input" value="{{ auth()->user()->username }}" readonly>
+            <small class="form-text">Username akun tidak dapat diubah.</small>
         </div>
 
         <div class="col-md-6 bb-input-group">

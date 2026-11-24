@@ -113,8 +113,9 @@
                     <li><a href="{{ route('admin.sessions') }}" class="{{ request()->routeIs('admin.sessions*') ? 'active' : '' }}"><i class="bi bi-shield-check"></i><span>Monitoring Sesi</span></a></li>
                     @if(auth()->user()->role === 'admin')
                         <li><a href="{{ route('admin.users') }}" class="{{ request()->routeIs('admin.users*') ? 'active' : '' }}"><i class="bi bi-people-fill"></i><span>Kelola Pengguna</span></a></li>
+                        <li><a href="{{ route('admin.store-settings') }}" class="{{ request()->routeIs('admin.store-settings*') ? 'active' : '' }}"><i class="bi bi-shop"></i><span>Pengaturan Toko</span></a></li>
                     @endif
-                    <li><a href="{{ route('admin.settings') }}" class="{{ request()->routeIs('admin.settings*') ? 'active' : '' }}"><i class="bi bi-sliders"></i><span>Pengaturan</span></a></li>
+                    <li><a href="{{ route('admin.settings') }}" class="{{ request()->routeIs('admin.settings*') ? 'active' : '' }}"><i class="bi bi-sliders"></i><span>Pengaturan Profil</span></a></li>
                 </ul>
             </div>
 
@@ -129,7 +130,7 @@
         {{-- MAIN --}}
         <div class="bb-admin-workspace">
             <header class="bb-admin-topbar">
-                <button type="button" class="bb-admin-menu-toggle" data-admin-sidebar-toggle aria-controls="admin-sidebar" aria-expanded="false" aria-label="Buka menu navigasi">
+                <button type="button" class="bb-admin-menu-toggle" data-admin-sidebar-toggle aria-controls="admin-sidebar" aria-expanded="false" aria-label="Buka menu navigasi" title="Buka menu navigasi">
                     <i class="bi bi-list" aria-hidden="true"></i>
                 </button>
                 <div class="bb-admin-topbar-title">

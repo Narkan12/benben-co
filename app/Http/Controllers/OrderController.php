@@ -7,9 +7,11 @@ use App\Models\Order;
 use App\Models\OrderStatusHistory;
 use App\Models\Product;
 use App\Models\Rating;
+use App\Models\StoreSetting;
 use App\Models\UserSession;
 use App\Services\WhatsAppCloudApi;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
@@ -30,8 +32,10 @@ class OrderController extends Controller
     {
         $order = Order::query()->with(['customer', 'details.product', 'statusHistories.user'])
             ->where('customer_id', auth()->user()->customer_id)->findOrFail($id);
+        $paymentDetails = $order->payment_details
+            ?? StoreSetting::current()->paymentInstructions((string) $order->payment_method);
 
-        return view('customer.order-detail', ['order' => $order]);
+        return view('customer.order-detail', compact('order', 'paymentDetails'));
     }
 
     public function proof(int $id, WhatsAppCloudApi $whatsApp)
@@ -39,9 +43,11 @@ class OrderController extends Controller
         $order = Order::query()->with(['customer', 'details.product', 'statusHistories.user'])
             ->where('customer_id', auth()->user()->customer_id)
             ->findOrFail($id);
+        $paymentDetails = $order->payment_details
+            ?? StoreSetting::current()->paymentInstructions((string) $order->payment_method);
         $whatsappUrl = $whatsApp->customerConfirmationUrl($order);
 
-        return view('customer.order-proof', compact('order', 'whatsappUrl'));
+        return view('customer.order-proof', compact('order', 'paymentDetails', 'whatsappUrl'));
     }
 
     public function submitPaymentProof(Request $request, int $id)
@@ -141,7 +147,7 @@ class OrderController extends Controller
         UserSession::syncExpiredSessions(auth()->id());
 
         if (! Schema::hasTable('user_sessions')) {
-            return view('customer.security', ['sessions' => new \Illuminate\Pagination\LengthAwarePaginator([], 0, 10, 1)]);
+            return view('customer.security', ['sessions' => new LengthAwarePaginator([], 0, 10, 1)]);
         }
 
         $sessions = UserSession::query()
@@ -200,7 +206,7 @@ class OrderController extends Controller
         $request->validate([
             'nama_customer' => ['required', 'string', 'max:100'],
             'rating' => ['required', 'integer', 'min:1', 'max:5'],
-            'komentar' => ['nullable', 'string'],
+            'komentar' => ['nullable', 'string', 'max:2000'],
         ]);
 
         Product::query()->findOrFail($productId);

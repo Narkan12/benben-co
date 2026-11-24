@@ -44,7 +44,7 @@
         <button type="button" class="bb-admin-sidebar-backdrop" data-customer-sidebar-close aria-label="Tutup menu"></button>
         <div class="bb-admin-workspace">
             <header class="bb-admin-topbar">
-                <button type="button" class="bb-admin-menu-toggle" data-customer-sidebar-toggle aria-controls="customer-sidebar" aria-expanded="false" aria-label="Buka menu navigasi"><i class="bi bi-list" aria-hidden="true"></i></button>
+                <button type="button" class="bb-admin-menu-toggle" data-customer-sidebar-toggle aria-controls="customer-sidebar" aria-expanded="false" aria-label="Buka menu navigasi" title="Buka menu navigasi"><i class="bi bi-list" aria-hidden="true"></i></button>
                 <div class="bb-admin-topbar-title"><span>AKUN SAYA <span aria-hidden="true">/</span> BENBEN CO.</span><strong>Customer Panel</strong></div>
                 <a href="{{ route('products') }}" class="bb-admin-topbar-link"><i class="bi bi-plus-lg"></i> Belanja</a>
                 <a href="{{ route('customer.profile') }}" class="bb-dashboard-profile" aria-label="Profil {{ auth()->user()->nama }}">

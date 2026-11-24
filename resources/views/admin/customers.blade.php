@@ -6,14 +6,16 @@
 
     <div class="bb-dash-topbar">
         <div>
-            <span class="eyebrow">Admin Panel</span>
             <h2 class="section-title" style="font-size:1.6rem;">Kelola Pelanggan</h2>
         </div>
     </div>
 
     <div class="bb-filter-bar">
-        <form method="GET" id="customer-search" class="d-flex gap-2">
-            <input type="search" name="search" class="bb-input" value="{{ request('search') }}" placeholder="Cari pelanggan..." style="max-width:280px;">
+        <form method="GET" id="customer-search" class="d-flex flex-wrap gap-2 align-items-end">
+            <div class="bb-filter-field">
+                <label for="customer-search-input" class="bb-form-label">Cari nama pelanggan</label>
+                <input id="customer-search-input" type="search" name="search" class="bb-input" value="{{ request('search') }}" placeholder="Nama pelanggan" style="max-width:280px;">
+            </div>
             <button class="btn-bb btn-bb-outline btn-bb-sm">Cari</button>
             @if(request()->filled('search'))<a href="{{ route('admin.customers') }}" class="btn-bb btn-bb-outline btn-bb-sm">Reset</a>@endif
         </form>

@@ -34,7 +34,7 @@
             <span class="bb-badge">{{ $badge }}</span>
         @endif
 
-        <button type="button" class="bb-wishlist-btn" aria-label="Tambah ke favorit">
+        <button type="button" class="bb-wishlist-btn" title="Tambah {{ $name }} ke favorit" aria-label="Tambah {{ $name }} ke favorit">
             <i class="bi bi-heart"></i>
         </button>
     </div>

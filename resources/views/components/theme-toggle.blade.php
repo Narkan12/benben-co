@@ -7,4 +7,5 @@
     title="Tema terang — klik untuk mode gelap"
 >
     <i class="bi bi-sun-fill" data-theme-icon aria-hidden="true"></i>
+    <span class="bb-theme-toggle-label">Tema</span>
 </button>

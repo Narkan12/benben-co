@@ -11,6 +11,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class CustomerAccountFeaturesTest extends TestCase
@@ -98,6 +99,32 @@ class CustomerAccountFeaturesTest extends TestCase
         $this->actingAs($user)
             ->get(route('customer.order.detail', $order->id_order))
             ->assertNotFound();
+    }
+
+    public function test_customer_order_history_shows_guidance_when_there_are_no_orders(): void
+    {
+        $customer = Customer::query()->create([
+            'nama' => 'Pelanggan Baru',
+            'no_whatsapp' => '08123456789',
+        ]);
+        $user = User::query()->create([
+            'nama' => 'Pelanggan Baru',
+            'username' => 'pelanggan-baru-orders',
+            'email' => 'pelanggan-baru-orders@example.com',
+            'password' => 'password123',
+            'role' => 'customer',
+            'customer_id' => $customer->id_customer,
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('customer.orders'))
+            ->assertOk()
+            ->assertSeeText('Belum ada pesanan')
+            ->assertSeeText('Pilih produk')
+            ->assertSeeText('Atur pesanan')
+            ->assertSeeText('Pantau status')
+            ->assertSee(route('products'), false)
+            ->assertDontSee('<table class="bb-table-bb">', false);
     }
 
     public function test_customer_can_confirm_receipt_only_for_own_ready_paid_order(): void
@@ -231,15 +258,17 @@ class CustomerAccountFeaturesTest extends TestCase
             'payment_status' => 'pending',
             'source' => 'online',
         ]);
+        $imageContent = file_get_contents(public_path('images/hero.jpg'));
+        $this->assertNotFalse($imageContent);
 
         $this->actingAs($user)
             ->patch(route('customer.order.payment-proof', $otherOrder->id_order), [
-                'payment_proof' => UploadedFile::fake()->image('other-receipt.png'),
+                'payment_proof' => UploadedFile::fake()->createWithContent('other-receipt.jpg', $imageContent),
             ])
             ->assertNotFound();
 
         $this->patch(route('customer.order.payment-proof', $order->id_order), [
-            'payment_proof' => UploadedFile::fake()->image('receipt.png'),
+            'payment_proof' => UploadedFile::fake()->createWithContent('receipt.jpg', $imageContent),
         ])
             ->assertSessionHas('success');
 
@@ -247,7 +276,7 @@ class CustomerAccountFeaturesTest extends TestCase
         $this->assertSame('pending', $order->status);
         $this->assertSame('pending', $order->payment_status);
         $this->assertStringStartsWith('payment-proofs/', $order->payment_proof);
-        Storage::disk('public')->assertExists($order->payment_proof);
+        $this->assertTrue(Storage::disk('public')->exists($order->payment_proof));
 
         $this->actingAs($admin)
             ->patch(route('admin.payments.verify', $order->id_order))
@@ -327,7 +356,8 @@ class CustomerAccountFeaturesTest extends TestCase
             ->assertOk()
             ->assertSeeText('Bukti Pemesanan')
             ->assertSeeText($ownOrder->kode_order)
-            ->assertSeeText($product->nama);
+            ->assertSeeText($product->nama)
+            ->assertSee('margin: 0;', false);
 
         $this->actingAs($user)
             ->get(route('customer.order.proof', $otherOrder->id_order))
@@ -508,23 +538,46 @@ class CustomerAccountFeaturesTest extends TestCase
             'deskripsi' => 'Kue keju untuk presensi POS',
         ]);
 
+        $this->actingAs($admin)
+            ->get(route('admin.pos'))
+            ->assertOk()
+            ->assertSee('data-money-input', false)
+            ->assertSee('Nominal cepat')
+            ->assertSee('data-pos-payment-presets', false)
+            ->assertSee('name="checkout_token"', false)
+            ->assertSee('js/pos.js', false);
+
         $before = Order::query()->count();
+        $transactionToken = (string) Str::uuid();
+        $transactionData = [
+            'checkout_token' => $transactionToken,
+            'nama' => 'Kasir POS',
+            'no_whatsapp' => '081122334455',
+            'payment_method' => 'cash',
+            'amount_received' => 60000,
+            'items' => [
+                ['product_id' => $product->id_product, 'qty' => 2],
+            ],
+        ];
 
         $response = $this->actingAs($admin)
-            ->post(route('admin.pos.store'), [
-                'nama' => 'Kasir POS',
-                'no_whatsapp' => '081122334455',
-                'payment_method' => 'cash',
-                'amount_received' => 60000,
-                'items' => [
-                    ['product_id' => $product->id_product, 'qty' => 2],
-                ],
-            ]);
+            ->post(route('admin.pos.store'), $transactionData);
 
         $response->assertSessionHas('success');
         $this->assertEquals($before + 1, Order::query()->count());
 
         $createdOrder = Order::query()->latest('id_order')->first();
+        $this->actingAs($admin)
+            ->post(route('admin.pos.store'), $transactionData)
+            ->assertRedirect(route('admin.pos.receipt', ['order' => $createdOrder->id_order]));
+
+        $this->assertEquals($before + 1, Order::query()->count());
+        $this->assertDatabaseCount('stock_logs', 1);
+        $this->assertDatabaseHas('orders', ['checkout_token' => $transactionToken]);
+        $this->assertEquals(60000, $createdOrder->cash_received);
+        $this->assertEquals(0, $createdOrder->cash_change);
+        $this->assertEquals(13, $product->fresh()->stok);
+
         $longReceiptProductNames = [];
         for ($item = 1; $item <= 8; $item++) {
             $name = 'Paket Roti Keju Susu Manis untuk Dibagikan Nomor '.$item;
@@ -549,13 +602,28 @@ class CustomerAccountFeaturesTest extends TestCase
         $receiptResponse = $this->actingAs($admin)
             ->get(route('admin.pos.receipt', $createdOrder->id_order))
             ->assertOk()
-            ->assertSeeText('Struk Transaksi')
+            ->assertSeeText('BENBEN CO.')
             ->assertSeeText($createdOrder->kode_order)
+            ->assertSeeText('Antapani, Kota Bandung')
+            ->assertSeeText('Headers and footers')
             ->assertSeeText($product->nama)
             ->assertSeeText('Tunai')
             ->assertSeeText('Telp: +628139494009')
+            ->assertSeeText('2 × Rp30.000 / unit')
+            ->assertSeeText('Total pembayaran')
+            ->assertSeeText('Uang diterima')
+            ->assertSeeText('Uang kembalian')
             ->assertSee('data-print-receipt', false)
             ->assertSee('receipt-paper-width', false)
+            ->assertSee('value="80"', false)
+            ->assertSee('value="58"', false)
+            ->assertSee('size: 80mm 180mm', false)
+            ->assertSee('body * {', false)
+            ->assertSee('.printable-receipt,', false)
+            ->assertSee('visibility: hidden !important;', false)
+            ->assertDontSee('<nav class="bb-navbar">', false)
+            ->assertDontSee('<footer class="bb-footer">', false)
+            ->assertDontSee('bb-admin-shell', false)
             ->assertSee('js/receipt.js', false);
 
         foreach ($longReceiptProductNames as $productName) {
@@ -576,6 +644,7 @@ class CustomerAccountFeaturesTest extends TestCase
             ->post(route('admin.pos.store'), [
                 'nama' => 'Kasir POS',
                 'payment_method' => 'cash',
+                'checkout_token' => (string) Str::uuid(),
                 'amount_received' => '60.000',
                 'items' => [['product_id' => 1, 'qty' => 1]],
             ])

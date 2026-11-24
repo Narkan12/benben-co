@@ -9,6 +9,83 @@ document.addEventListener('DOMContentLoaded', function () {
     window.bootstrap.Modal.getOrCreateInstance(promoModal).show();
   }
 
+  const liveCartPanel = document.querySelector('[data-live-cart]');
+  const formatLiveCartMoney = (amount) => `Rp${new Intl.NumberFormat('id-ID').format(amount)}`;
+
+  function renderLiveCart(summary) {
+    if (!liveCartPanel) return;
+
+    const itemsElement = liveCartPanel.querySelector('[data-live-cart-items]');
+    const countElement = liveCartPanel.querySelector('[data-live-cart-count]');
+    const subtotalElement = liveCartPanel.querySelector('[data-live-cart-subtotal]');
+    const items = Array.isArray(summary.items) ? summary.items : [];
+
+    if (countElement) {
+      countElement.textContent = `${new Intl.NumberFormat('id-ID').format(summary.item_count || 0)} item`;
+    }
+    if (subtotalElement) subtotalElement.textContent = formatLiveCartMoney(summary.subtotal || 0);
+    if (!itemsElement) return;
+
+    itemsElement.replaceChildren();
+    if (items.length === 0) {
+      const emptyMessage = document.createElement('p');
+      emptyMessage.className = 'section-sub mb-0';
+      emptyMessage.textContent = 'Keranjang masih kosong.';
+      itemsElement.append(emptyMessage);
+      return;
+    }
+
+    items.forEach((item) => {
+      const row = document.createElement('article');
+      row.className = 'bb-live-cart-item';
+
+      const image = document.createElement('img');
+      image.src = item.image;
+      image.alt = item.name;
+      image.loading = 'lazy';
+
+      const details = document.createElement('div');
+      details.className = 'bb-live-cart-details';
+
+      const name = document.createElement('strong');
+      name.textContent = item.name;
+
+      const quantity = document.createElement('span');
+      quantity.textContent = `${new Intl.NumberFormat('id-ID').format(item.quantity)} × ${formatLiveCartMoney(item.price)}`;
+
+      const lineTotal = document.createElement('span');
+      lineTotal.className = 'bb-live-cart-line-total';
+      lineTotal.textContent = formatLiveCartMoney(item.line_total);
+
+      details.append(name, quantity, lineTotal);
+      row.append(image, details);
+
+      if (!item.available) {
+        const warning = document.createElement('small');
+        warning.className = 'bb-live-cart-warning';
+        warning.textContent = 'Stok/ketersediaan perlu diperiksa';
+        row.append(warning);
+      }
+
+      itemsElement.append(row);
+    });
+  }
+
+  if (liveCartPanel) {
+    fetch(liveCartPanel.dataset.summaryUrl, {
+      headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error('Ringkasan keranjang tidak dapat dimuat.');
+        return response.json();
+      })
+      .then(renderLiveCart)
+      .catch((error) => {
+        const itemsElement = liveCartPanel.querySelector('[data-live-cart-items]');
+        if (itemsElement) itemsElement.textContent = error.message;
+      });
+  }
+
   const whatsappContactForm = document.querySelector('[data-whatsapp-contact-form]');
   whatsappContactForm?.addEventListener('submit', (event) => {
     event.preventDefault();
@@ -138,6 +215,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
       const cartBadge = document.querySelector('.bb-cart-badge');
       if (cartBadge) cartBadge.textContent = result.cart_item_count;
+      if (result.cart_summary) renderLiveCart(result.cart_summary);
       if (feedback) {
         feedback.textContent = result.message;
         feedback.hidden = false;
